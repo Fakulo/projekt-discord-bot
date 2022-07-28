@@ -1,0 +1,28 @@
+﻿{
+            "73ea00b7e6d54dc99524b9bb424d1e1e.16": {
+            "guid": "73ea00b7e6d54dc99524b9bb424d1e1e.16",
+            "lat": 50.754774,
+            "lng": 15.040019,
+            "name": "Fox's Den"
+        },
+        "dfb6b2c6e77e4c789b3eb7e8c38aed7c.16": {
+            "guid": "dfb6b2c6e77e4c789b3eb7e8c38aed7c.16",
+            "lat": 50.752851,
+            "lng": 15.035483,
+            "name": "Kočka  U Veterinární  Kliniky "
+        },
+        "ae366ff8d5d2483695000d5cd6ad6027.16": {
+            "guid": "ae366ff8d5d2483695000d5cd6ad6027.16",
+            "lat": 50.751162,
+            "lng": 15.034033,
+            "name": "Matka a dítě",
+            "isEx": true
+        },
+        "7d55ce56ed09449787b11ed6d2485921.16": {
+            "guid": "7d55ce56ed09449787b11ed6d2485921.16",
+            "lat": 50.774854,
+            "lng": 15.062458,
+            "name": "Informační tabule města Liberec"
+        }  
+    
+}

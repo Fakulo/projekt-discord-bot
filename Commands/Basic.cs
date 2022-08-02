@@ -107,46 +107,51 @@ namespace DiscordBot.Commands
         }
 
         [Command("list")]
-        public async Task List(CommandContext ctx)
+        public async Task List(CommandContext ctx, string input)
         {
-            // DatabaseComm db = new DatabaseComm(ctx);
+            DatabaseComm db = new DatabaseComm(ctx);
 
             //await Task.Run(() => db.CheckPoints());
-            string reallyLongString = "Lorem ipsum dolor sit amet, consectetur adipiscing ...";
-            var interactivity = ctx.Client.GetInteractivityModule();
-            List<String> l = new List<String>();
-            for (int i = 0; i < 10; i++)
-            {                
-                l.Add("Test textu " + i);
-            }
-            var pages = this.GeneratePagesInEmbeds(l);
+            List<Point> points = db.GetPoints(input);
+            var interactivity = ctx.Client.GetInteractivityModule();      
+            
+            var pages = this.GeneratePagesInEmbeds(ctx, points);
             //DiscordMessage m = await ctx.Client.SendMessageAsync(ctx.Channel, l[0]).ConfigureAwait(false);
-            PaginatedMessage pm = new PaginatedMessage();
+            //PaginatedMessage pm = new PaginatedMessage();
             var pokestopEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.Pokestop);
             var ct = new CancellationTokenSource(30);
-            await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages,TimeSpan.FromMinutes(1),TimeoutBehaviour.Delete);
+            await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages,TimeSpan.FromMinutes(5),TimeoutBehaviour.Delete);
         }
 
-        public IEnumerable<Page> GeneratePagesInEmbeds(List<String> input)
+        public IEnumerable<Page> GeneratePagesInEmbeds(CommandContext ctx, List<Point> points)
         {
-            if (input.Count == 0)
+            if (points.Count == 0)
             {
                 throw new InvalidOperationException("You must provide a string that is not null or empty!");
             }
 
             List<Page> list = new List<Page>();
-            int num = 1;
-            foreach (string item in input)
+            StringBuilder sb;         
+            for (int i = 0; i < points.Count; i++)
             {
-                list.Add(new Page
+                sb = new StringBuilder();
+                sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<PointType>(points[i].Type)) + " " + points[i].Type);
+                sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Point) + " " + points[i].Latitude.ToString().Replace(",", ".") + ", " + points[i].Longitude.ToString().Replace(",", "."));
+                sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Edit) + " " + points[i].LastUpdate.ToString());
+                
+                var embed = new DiscordEmbedBuilder
                 {
-                    Embed = new DiscordEmbedBuilder
-                    {
-                        Title = $"Page {num}",
-                        Description = item
-                    }
+                    Title = points[i].Name,
+                    Description = sb.ToString(),
+                    Color = DiscordColor.Blue,
+                    Url = "https://www.google.cz/maps/place/" + points[i].Latitude.ToString().Replace(",", ".") + "," + points[i].Longitude.ToString().Replace(",", ".")
+                };
+                string before = (i == 0) ? ("- " + Emoji.GetEmoji(ctx, Emoji.ArrowBack)) : (points[i - 1].Name + " " + Emoji.GetEmoji(ctx, Emoji.ArrowBack));
+                string after = (i == points.Count-1) ? (Emoji.GetEmoji(ctx, Emoji.ArrowNext) + " -") : (Emoji.GetEmoji(ctx, Emoji.ArrowNext) + " " + points[i + 1].Name);
+                embed.WithFooter($" {before} {i+1}/{points.Count} {after} ");
+                list.Add( new Page {
+                    Embed = embed                    
                 });
-                num++;
             }
 
             return list;

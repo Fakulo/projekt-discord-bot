@@ -37,8 +37,10 @@ namespace DiscordBot.Models
                     emoji = DiscordEmoji.FromName(ctx.Client, Question);
                     return emoji;
             }
-        }        
+        }
+        public static string ArrowBack { get { return ":arrow_backward:"; } }
         public static string ArrowChange { get { return ":arrows_counterclockwise:"; } }
+        public static string ArrowNext { get { return ":arrow_forward:"; } }
         public static string ArrowRight { get { return ":arrow_right:"; } }
         public static string Edit { get { return ":pencil2:"; } }
         public static string ExGym { get { return ":exgym:"; } }

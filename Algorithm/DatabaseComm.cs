@@ -478,6 +478,13 @@ namespace DiscordBot.Algorithm
 
 
         }
+
+        public List<Point> GetPoints(string searchString = "")
+        {
+            using var context = new PogoContext();            
+            List<Point> points = context.Points.Where(i => i.Name.ToLower().Contains(searchString.ToLower())).ToList();
+            return points;
+        }
         /// <summary>
         /// Kontrola vstupního bodu s databází.
         /// </summary>

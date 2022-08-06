@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using MySql.Data.EntityFrameworkCore.Metadata;
+using MySql.EntityFrameworkCore.Metadata;
 
 namespace DiscordBot.Migrations
 {
@@ -28,6 +28,7 @@ namespace DiscordBot.Migrations
                     table.PrimaryKey("PK_Points", x => x.IdPoint);
                 });
         }
+        
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {

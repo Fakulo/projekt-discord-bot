@@ -12,6 +12,7 @@ namespace DiscordBot.Database
     public class PogoContext : DbContext
     {
         public DbSet<Point> Points { get; set; }
+        public DbSet<Pokemon> Pokemons { get; set; }
 
         public string DbPath { get; }
 
@@ -22,9 +23,10 @@ namespace DiscordBot.Database
         }*/
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite("Data Source=PogoLiberec.db");
+            => options.UseSqlite("Data Source=D:\\Tomáš\\Documents\\Visual Studio 2019\\Projekty\\DiscordBot\\bin\\Debug\\net6.0\\PogoLiberec.db");
 
         /*protected override void OnConfiguring(DbContextOptionsBuilder options)
+         * bin\\Debug\\net6.0\\
             => options.UseMySQL("server=localhost;database=pogoliberec;user=root;password=");*/
     }
 

@@ -62,7 +62,7 @@ namespace DiscordBot.Algorithm
                 StringBuilder sb = new StringBuilder();
                 Point result = new Point();
                 Task<bool> successful;
-                Task<(bool, PointType)> resultData;
+                Task<(bool, Enums.PointType)> resultData;
 
                 switch (state)
                 {
@@ -71,7 +71,7 @@ namespace DiscordBot.Algorithm
                         point = new Point
                         {
                             Name = items[i].Name,
-                            Type = PointType.Pokestop.ToString(),
+                            Type = Enums.PointType.Pokestop.ToString(),
                             ExGym = false,
                             Latitude = items[i].Latitude,
                             Longitude = items[i].Longitude,
@@ -122,7 +122,7 @@ namespace DiscordBot.Algorithm
                             context.Points.Add(point);
 
                             Methods.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
-                            if (resultData.Result.Item2 == PointType.Pokestop){count[0] += 1;}
+                            if (resultData.Result.Item2 == Enums.PointType.Pokestop){count[0] += 1;}
                             else{count[1] += 1;}
                         }
                         else
@@ -140,7 +140,7 @@ namespace DiscordBot.Algorithm
                         else if (result.Type == PointType.Gym.ToString()) { sb.Append(Emoji.GetEmoji(ctx, Emoji.Gym)); }
                         else { sb.Append(Emoji.GetEmoji(ctx, Emoji.Ingress)); }*/
 
-                        sb.Insert(0, Emoji.GetEmoji(ctx, Enum.Parse<PointType>(result.Type)));
+                        sb.Insert(0, Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(result.Type)));
 
                         sb.AppendLine(" " + items[i].Name);
                         sb.AppendLine();
@@ -164,7 +164,7 @@ namespace DiscordBot.Algorithm
                         else if (result.Type == PointType.Gym.ToString()) { sb.Append(Emoji.GetEmoji(ctx, Emoji.Gym)); }
                         else { sb.Append(Emoji.GetEmoji(ctx, Emoji.Ingress)); }*/
 
-                        sb.Insert(0, Emoji.GetEmoji(ctx, Enum.Parse<PointType>(result.Type)));
+                        sb.Insert(0, Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(result.Type)));
 
                         sb.AppendLine(" " + result.Name);
                         sb.AppendLine();
@@ -212,7 +212,7 @@ namespace DiscordBot.Algorithm
                         else if (result.Type == Models.PointType.Gym.ToString()) { sb.Insert(0, Emoji.GetEmoji(ctx, Emoji.Gym)); }
                         else { sb.Insert(0, Emoji.GetEmoji(ctx, Emoji.Ingress)); }*/
                         // TODO: Proč se někde používá sb.Insert a jinde sb.Append
-                        sb.Insert(0, Emoji.GetEmoji(ctx, Enum.Parse<PointType>(result.Type)));
+                        sb.Insert(0, Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(result.Type)));
 
                         if (successful.Result)
                         {
@@ -294,7 +294,7 @@ namespace DiscordBot.Algorithm
             using var context = new PogoContext();
             StringBuilder sb;
             string title;
-            Task<(bool, PointType)> resultData;
+            Task<(bool, Enums.PointType)> resultData;
             // TODO: Omezit výpis pokud bude počet nalezených stopů větší než 20 (30?), tak vybídnout k podrobějšímu vyhledávání.
             List<Point> points = context.Points.Where(i => i.Name.ToLower().Contains(name.ToLower())).ToList();
 
@@ -305,7 +305,7 @@ namespace DiscordBot.Algorithm
                 sb.Append("Vyber nový typ bodu nebo pokračuj na další ");
                 sb.Append(Emoji.GetEmoji(ctx, Emoji.ArrowRight));    
 
-                title = (i+1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, Enum.Parse<PointType>(points[i].Type)) + " " + points[i].Type + " " + points[i].Name;
+                title = (i+1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + points[i].Type + " " + points[i].Name;
 
                 resultData = CheckData.ChangeType(ctx, chnl_out, points[i], title, sb.ToString(), DiscordColor.Orange);
                 if (resultData.Result.Item1)
@@ -314,7 +314,7 @@ namespace DiscordBot.Algorithm
                     sb.AppendLine(points[i].Name);
                     sb.AppendLine();
                     sb.Append(Emoji.GetEmoji(ctx, Emoji.RedCross));
-                    sb.AppendLine(" Původní typ: " + Emoji.GetEmoji(ctx, Enum.Parse<PointType>(points[i].Type)) + " " + points[i].Type);
+                    sb.AppendLine(" Původní typ: " + Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + points[i].Type);
                     sb.Append(Emoji.GetEmoji(ctx, Emoji.New));
                     sb.AppendLine(" Nový typ: " + Emoji.GetEmoji(ctx, resultData.Result.Item2) + " " + resultData.Result.Item2.ToString());
 
@@ -350,13 +350,13 @@ namespace DiscordBot.Algorithm
                 sb.Append("Napiš nový název bodu nebo pokračuj na další ");
                 sb.Append(Emoji.GetEmoji(ctx, Emoji.ArrowRight));
 
-                title = (i+1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, Enum.Parse<PointType>(points[i].Type)) + " " + points[i].Name;
+                title = (i+1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + points[i].Name;
 
                 resultData = CheckData.ChangeName(ctx, chnl_out, points[i], title, sb.ToString(), DiscordColor.Orange);
                 if (resultData.Result.Item1)
                 {
                     sb = new StringBuilder();
-                    sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<PointType>(points[i].Type)) + " " + resultData.Result.Item2);
+                    sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + resultData.Result.Item2);
                     sb.AppendLine();
                     sb.Append(Emoji.GetEmoji(ctx, Emoji.RedCross));
                     sb.AppendLine(" Původní název: " + points[i].Name);
@@ -403,7 +403,7 @@ namespace DiscordBot.Algorithm
                 sb.Append("Potvrď nebo pokračuj na další ");
                 sb.Append(Emoji.GetEmoji(ctx, Emoji.ArrowRight));
 
-                title = (i + 1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, Enum.Parse<PointType>(points[i].Type)) + " " + originalPoint.Name;
+                title = (i + 1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + originalPoint.Name;
 
                 resultData = CheckData.ManualCheck(ctx, chnl_out, points[i], title, sb.ToString(), DiscordColor.Orange);
                 // TODO: Zde odchytávat nastalé události a vypisovat zde do chatu co se stalo.
@@ -421,28 +421,28 @@ namespace DiscordBot.Algorithm
                         switch (resultData.Result.Item2)
                         {
                             case "Pokestop":
-                                points[i].Type = PointType.Pokestop.ToString();
+                                points[i].Type = Enums.PointType.Pokestop.ToString();
                                 points[i].LastUpdate = DateTime.Now;
                                 points[i].NeedCheck = false;
                                 await context.SaveChangesAsync();
                                 Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "Gym":
-                                points[i].Type = PointType.Gym.ToString();
+                                points[i].Type = Enums.PointType.Gym.ToString();
                                 points[i].LastUpdate = DateTime.Now;
                                 points[i].NeedCheck = false;
                                 await context.SaveChangesAsync();
                                 Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "ExGym":
-                                points[i].Type = PointType.ExGym.ToString();
+                                points[i].Type = Enums.PointType.ExGym.ToString();
                                 points[i].LastUpdate = DateTime.Now;
                                 points[i].NeedCheck = false;
                                 await context.SaveChangesAsync();
                                 Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "Portal":
-                                points[i].Type = PointType.Portal.ToString();
+                                points[i].Type = Enums.PointType.Portal.ToString();
                                 points[i].LastUpdate = DateTime.Now;
                                 points[i].NeedCheck = false;
                                 await context.SaveChangesAsync();
@@ -484,6 +484,14 @@ namespace DiscordBot.Algorithm
             using var context = new PogoContext();            
             List<Point> points = context.Points.Where(i => i.Name.ToLower().Contains(searchString.ToLower())).ToList();
             return points;
+        }
+
+        public List<Pokemon> GetPokemons()
+        {
+            using var context = new PogoContext();
+            List<Pokemon> pokemons = context.Pokemons.ToList();
+            //List<Pokemon> pokemons = context.Pokemons.Where(i => i.Name.ToLower().Contains(searchString.ToLower())).ToList();
+            return pokemons;
         }
         /// <summary>
         /// Kontrola vstupního bodu s databází.

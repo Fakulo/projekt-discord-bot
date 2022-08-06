@@ -16,21 +16,21 @@ namespace DiscordBot.Models
         /// <param name="ctx">CommandContext</param>
         /// <param name="type">Typ bodu</param>
         /// <returns>Emoji</returns>
-        public static DiscordEmoji GetEmoji(CommandContext ctx, PointType type)
+        public static DiscordEmoji GetEmoji(CommandContext ctx, Enums.PointType type)
         {
             DiscordEmoji emoji;
             switch (type)
             {
-                case PointType.Pokestop:
+                case Enums.PointType.Pokestop:
                     emoji = DiscordEmoji.FromName(ctx.Client, Pokestop);
                     return emoji;
-                case PointType.Gym:
+                case Enums.PointType.Gym:
                     emoji = DiscordEmoji.FromName(ctx.Client, Gym);
                     return emoji;
-                case PointType.ExGym:
+                case Enums.PointType.ExGym:
                     emoji = DiscordEmoji.FromName(ctx.Client, ExGym);
                     return emoji;
-                case PointType.Portal:
+                case Enums.PointType.Portal:
                     emoji = DiscordEmoji.FromName(ctx.Client, Ingress);
                     return emoji;
                 default:

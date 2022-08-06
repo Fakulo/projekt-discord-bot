@@ -26,7 +26,7 @@ namespace DiscordBot.Models
         public string Name { get; set; }
 
         [Required]
-        [EnumDataType(typeof(PointType))]
+        [EnumDataType(typeof(Enums.PointType))]
         [StringLength(50, ErrorMessage = "Maximální délka Type je 50 znaků.")]
         public string Type { get; set; }
 
@@ -46,11 +46,11 @@ namespace DiscordBot.Models
         public DateTime LastUpdate { get; set; }     
 
     }
-    public enum PointType
-    {
-        Pokestop,
-        Gym,
-        ExGym,
-        Portal
-    }
+    //public enum PointType
+    //{
+    //    Pokestop,
+    //    Gym,
+    //    ExGym,
+    //    Portal
+    //}
 }

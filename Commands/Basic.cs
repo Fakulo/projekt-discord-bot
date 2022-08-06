@@ -123,6 +123,15 @@ namespace DiscordBot.Commands
             await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages,TimeSpan.FromMinutes(5),TimeoutBehaviour.Delete);
         }
 
+        [Command("pokemons")]
+        public async Task Pokemons(CommandContext ctx)
+        {
+            DatabaseComm db = new(ctx);            
+            List<Pokemon> pokemons = db.GetPokemons();
+            
+            await ctx.Channel.SendMessageAsync(pokemons[0].Name.ToString()).ConfigureAwait(false);           
+        }
+
         public IEnumerable<Page> GeneratePagesInEmbeds(CommandContext ctx, List<Point> points)
         {
             if (points.Count == 0)
@@ -135,7 +144,7 @@ namespace DiscordBot.Commands
             for (int i = 0; i < points.Count; i++)
             {
                 sb = new StringBuilder();
-                sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<PointType>(points[i].Type)) + " " + points[i].Type);
+                sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + points[i].Type);
                 sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Point) + " " + points[i].Latitude.ToString().Replace(",", ".") + ", " + points[i].Longitude.ToString().Replace(",", "."));
                 sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Edit) + " " + points[i].LastUpdate.ToString());
                 

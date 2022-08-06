@@ -123,6 +123,15 @@ namespace DiscordBot.Commands
             await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages,TimeSpan.FromMinutes(5),TimeoutBehaviour.Delete);
         }
 
+        [Command("pokemons")]
+        public async Task Pokemons(CommandContext ctx)
+        {
+            DatabaseComm db = new(ctx);            
+            List<Pokemon> pokemons = db.GetPokemons();
+            
+            await ctx.Channel.SendMessageAsync(pokemons[0].Name.ToString()).ConfigureAwait(false);           
+       }
+
         public IEnumerable<Page> GeneratePagesInEmbeds(CommandContext ctx, List<Point> points)
         {
             if (points.Count == 0)

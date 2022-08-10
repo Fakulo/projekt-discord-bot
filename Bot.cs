@@ -2,6 +2,7 @@
 using DiscordBot.Commands;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using Newtonsoft.Json;
@@ -46,11 +47,15 @@ namespace DiscordBot
                 Timeout = TimeSpan.FromSeconds(30)
             });
 
+            Client.MessageCreated += OnTypingReady;
+
+            
+
             var commandsConfig = new CommandsNextConfiguration
             {
                 StringPrefix = "!",
                 EnableDms = false,
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true                
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
@@ -63,6 +68,22 @@ namespace DiscordBot
             await Task.Delay(-1);
 
         }
+
+        private async Task<Task> OnTypingReady(MessageCreateEventArgs e)
+        {
+            if (e.Author.Id != e.Client.CurrentUser.Id)
+            {
+                var member = (DiscordMember)e.Author;
+
+                Console.WriteLine("píše...");
+                Console.WriteLine(e.Author.Username + ": " + e.Message.Content);
+                await e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
+                DiscordChannel channel = await member.CreateDmChannelAsync().ConfigureAwait(false);
+                await channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
+            }            
+            return Task.CompletedTask;
+        }        
+
         private Task OnClientReady(ReadyEventArgs e)
         {
             return Task.CompletedTask;

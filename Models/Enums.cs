@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DiscordBot.Models
 {
-    class Enums
+    public class Enums
     {
         public enum PointType
         {
@@ -43,6 +43,13 @@ namespace DiscordBot.Models
             Galarian,
             Hisuian
         }
+        public enum Team
+        {
+            Valor,
+            Mystic,
+            Instinct,
+            None
+        }
         public enum Generation : int
         {
             Kanto = 1,
@@ -54,6 +61,15 @@ namespace DiscordBot.Models
             Alola = 7,
             Galar = 8,
             Paldea = 9
+        }
+
+        public enum WarningPhase : int
+        {
+            None = 0,
+            První = 1,
+            Druhá = 2,
+            Třetí = 3,
+            Finální = 4
         }
     }
 }

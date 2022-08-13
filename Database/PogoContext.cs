@@ -13,6 +13,8 @@ namespace DiscordBot.Database
     {
         public DbSet<Point> Points { get; set; }
         public DbSet<Pokemon> Pokemons { get; set; }
+        public DbSet<Player> Players { get; set; }
+        public DbSet<GymCell> GymsInCells { get; set; }
 
         public string DbPath { get; }
 

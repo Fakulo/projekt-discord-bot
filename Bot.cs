@@ -1,5 +1,6 @@
 ﻿using DiscordBot.Algorithm;
 using DiscordBot.Commands;
+using DiscordBot.Models;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
@@ -47,7 +48,7 @@ namespace DiscordBot
                 Timeout = TimeSpan.FromSeconds(30)
             });
 
-            Client.MessageCreated += OnTypingReady;
+            Client.MessageCreated += OnTypingReady;            
 
             
 
@@ -67,20 +68,17 @@ namespace DiscordBot
 
             await Task.Delay(-1);
 
-        }
+        }        
 
         private async Task<Task> OnTypingReady(MessageCreateEventArgs e)
         {
             if (e.Author.Id != e.Client.CurrentUser.Id)
-            {
-                var member = (DiscordMember)e.Author;
-
-                Console.WriteLine("píše...");
-                Console.WriteLine(e.Author.Username + ": " + e.Message.Content);
+            {                  
+               Console.WriteLine("Privátní kanál: " + e.Channel.IsPrivate);
+               Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
                 await e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
-                DiscordChannel channel = await member.CreateDmChannelAsync().ConfigureAwait(false);
-                await channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
-            }            
+            }
+            Pokemon p = new Pokemon();            
             return Task.CompletedTask;
         }        
 

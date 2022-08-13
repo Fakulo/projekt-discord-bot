@@ -144,7 +144,7 @@ namespace DiscordBot.Commands
             for (int i = 0; i < points.Count; i++)
             {
                 sb = new StringBuilder();
-                sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + points[i].Type);
+                sb.AppendLine(Emoji.GetEmoji(ctx, points[i].Type) + " " + points[i].Type);
                 sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Point) + " " + points[i].Latitude.ToString().Replace(",", ".") + ", " + points[i].Longitude.ToString().Replace(",", "."));
                 sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Edit) + " " + points[i].LastUpdate.ToString());
                 

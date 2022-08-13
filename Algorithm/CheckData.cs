@@ -191,10 +191,10 @@ namespace DiscordBot.Algorithm
             var skipEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.ArrowRight);
 
             // Vytvoření reakcí
-            if (p.Type != Enums.PointType.Pokestop.ToString()) { await message.CreateReactionAsync(pokestopEmoji); }
-            if (p.Type != Enums.PointType.Gym.ToString()) { await message.CreateReactionAsync(gymEmoji); }
-            if (p.Type != Enums.PointType.ExGym.ToString()) { await message.CreateReactionAsync(exGymEmoji); }
-            if (p.Type != Enums.PointType.Portal.ToString()) { await message.CreateReactionAsync(portalEmoji); }            
+            if (p.Type != Enums.PointType.Pokestop) { await message.CreateReactionAsync(pokestopEmoji); }
+            if (p.Type != Enums.PointType.Gym) { await message.CreateReactionAsync(gymEmoji); }
+            if (p.Type != Enums.PointType.ExGym) { await message.CreateReactionAsync(exGymEmoji); }
+            if (p.Type != Enums.PointType.Portal) { await message.CreateReactionAsync(portalEmoji); }            
 
             await message.CreateReactionAsync(skipEmoji);
 
@@ -285,7 +285,7 @@ namespace DiscordBot.Algorithm
 
             var result = await Task.WhenAny(tasks);
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(p.Type)) + " " + p.Name);
+            sb.AppendLine(Emoji.GetEmoji(ctx, p.Type) + " " + p.Name);
             sb.AppendLine();
 
             if (result == messageResult)
@@ -408,7 +408,7 @@ namespace DiscordBot.Algorithm
                 await message.DeleteAsync();
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(p.Type)) + " " + p.Name);
+                sb.AppendLine(Emoji.GetEmoji(ctx, p.Type) + " " + p.Name);
 
                 StringBuilder sbr = new StringBuilder();
                 sbr.AppendLine("ZMĚNA NÁZVU:");

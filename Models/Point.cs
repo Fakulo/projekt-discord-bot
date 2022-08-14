@@ -1,4 +1,5 @@
 ﻿using Google.Common.Geometry;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,6 +12,19 @@ namespace DiscordBot.Models
 {
     public class Point
     {
+
+        public Point()
+        {
+
+        }
+
+        private GymCell _gymCell;
+        private ILazyLoader LazyLoader { get; set; }
+        private Point(ILazyLoader lazyLoader)
+        {
+            LazyLoader = lazyLoader;
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
@@ -31,9 +45,8 @@ namespace DiscordBot.Models
         public string Name { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enum))]
-        [StringLength(50, ErrorMessage = "Maximální délka Type je 50 znaků.")]
-        [Description("Kontrola buňky.")]
+        [EnumDataType(typeof(PointType))]
+        [Description("Typ bodu.")]
         public PointType Type { get; set; }
 
         [Required]
@@ -44,15 +57,20 @@ namespace DiscordBot.Models
         [Required]
         [StringLength(100, ErrorMessage = "Maximální délka IdCell17 je 100 znaků.")]
         [Description("ID buňky - level 17.")]
-        public string IdCell17 { get; set; }        
+        public string IdCell17 { get; set; }
+
+        public GymCell GymCell
+        {
+            get => LazyLoader.Load(this, ref _gymCell);
+            set => _gymCell = value;
+        }
 
         [Required]
         [DefaultValue(false)]
         [Description("Kontrola buňky.")]
         public bool NeedCheck { get; set; }
 
-        [DataType(DataType.Date)]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DataType(DataType.DateTime)]
         [Description("Datum a čas poslední aktualizace údajů.")]
         public DateTime LastUpdate { get; set; }     
 

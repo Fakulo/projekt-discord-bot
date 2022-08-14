@@ -30,7 +30,7 @@ namespace DiscordBot.Models
 
         [Required]
         [DefaultValue(1)]
-        [MinLength(1, ErrorMessage = "Minilání level je 1.")]
+        [MinLength(1, ErrorMessage = "Minimálání level je 1.")]
         [MaxLength(50, ErrorMessage = "Maximální level je 50.")]
         [Description("Úroveň hráče ve hře.")]
         public int Level { get; set; }
@@ -79,15 +79,15 @@ namespace DiscordBot.Models
         [Description("Celkový počet nasbíraných zkušeností ve hře.")]
         public int TotalXP { get; set; }
 
-        [DataType(DataType.Date)]
+        [DataType(DataType.DateTime)]
         [Description("Datum založení účtu ve hře.")]
         public DateTime StartDate { get; set; }
 
-        [DataType(DataType.Date)]
+        [DataType(DataType.DateTime)]
         [Description("Datum a čas poslední aktualizace údajů ze hry.")]
         public DateTime StatsUpdate { get; set; }
 
-        [DataType(DataType.Date)]
+        [DataType(DataType.DateTime)]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Description("Datum a čas poslední aktualizace údajů.")]
         public DateTime LastUpdate { get; set; }

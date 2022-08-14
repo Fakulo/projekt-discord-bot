@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SQLiteNetExtensionsAsync.Extensions;
 using static DiscordBot.Algorithm.CheckData;
 using static DiscordBot.Models.Enums;
 
@@ -30,22 +31,7 @@ namespace DiscordBot.Algorithm
             chnl_out = ctx.Client.GetChannelAsync(id_out);
             chnl_comm = ctx.Client.GetChannelAsync(id_comm);
         }
-        //TODO: Používat i ChangePositionOrAdd
-        /// <summary>
-        /// Stav vstupního bodu
-        /// </summary>
-        enum State
-        {
-            AddToDB,
-            AddToDBCheck,
-            ChangeName,
-            ChangeNameCheck,
-            ChangePosition,
-            ChangePositionCheck,
-            ChangePositionOrAdd,
-            Duplicate,
-            Unreachable
-        }
+        
         /// <summary>
         /// Zpracuje list bodů.
         /// </summary>
@@ -60,10 +46,10 @@ namespace DiscordBot.Algorithm
             {
                 State state = CheckIfExists(context, items[i]);
                 Point point;
-                StringBuilder sb = new StringBuilder();
-                Point result = new Point();
+                StringBuilder sb = new();
+                Point result = new();
                 Task<bool> successful;
-                Task<(bool, Enums.PointType)> resultData;
+                Task<(bool, PointType)> resultData;
                 // TODO: U změny souřadnic kontrolovat i změnu buňky CELL14 !!
                 switch (state)
                 {
@@ -72,7 +58,7 @@ namespace DiscordBot.Algorithm
                         point = new Point
                         {
                             Name = items[i].Name,
-                            Type = Enums.PointType.Pokestop,
+                            Type = PointType.Pokestop,
                             Latitude = items[i].Latitude,
                             Longitude = items[i].Longitude,
                             IdCell14 = items[i].GetParent(14),
@@ -84,13 +70,16 @@ namespace DiscordBot.Algorithm
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Pokestop));
                         sb.AppendLine(" " + items[i].Name);
                         
-                        context.Points.Add(point);
+                        //context.Points.Add(point);
+                        await context.SaveChangesAsync();
+                        AddToGymCellsAsync(point);
                         Methods.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
                          
                         count[0] += 1;
                         break;
                     // vytvoření bodu pro kontrolu
                     case State.AddToDBCheck:
+                        // TODO: Oddělit StringBuilder do jedné přetížené metody v jiné třídě
                         sb.AppendLine(" " + items[i].Name);
                         sb.AppendLine();
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Location));
@@ -100,7 +89,7 @@ namespace DiscordBot.Algorithm
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Id));
                         sb.AppendLine(" Id Cell 17: " + items[i].GetParent(17));
 
-                        resultData = CheckData.AddCheckPoint(ctx, chnl_comm, items[i], "Nutná ruční kontrola a přidání.", sb.ToString(), DiscordColor.Orange);
+                        resultData = AddCheckPoint(ctx, chnl_comm, items[i], "Nutná ruční kontrola a přidání.", sb.ToString(), DiscordColor.Orange);
 
                         /*if (resultData.Result.Item2 == PointType.Pokestop){sb.Insert(0,Emoji.GetEmoji(ctx, Emoji.Pokestop));}
                         else{sb.Insert(0,Emoji.GetEmoji(ctx, Emoji.Ingress));}*/
@@ -121,7 +110,8 @@ namespace DiscordBot.Algorithm
                             };
 
                             context.Points.Add(point);
-
+                            await context.SaveChangesAsync();
+                            AddToGymCellsAsync(point);
                             Methods.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
                             if (resultData.Result.Item2 == Enums.PointType.Pokestop){count[0] += 1;}
                             else{count[1] += 1;}
@@ -207,11 +197,12 @@ namespace DiscordBot.Algorithm
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.New));
                         sb.AppendLine(" Id Cell 17: " + newIdCell17);
 
-                        successful = CheckData.CheckPoint(ctx, chnl_comm, result, "Nutná ruční kontrola polohy.", sb.ToString(), DiscordColor.Orange);
+                        successful = CheckPoint(ctx, chnl_comm, result, "Nutná ruční kontrola polohy.", sb.ToString(), DiscordColor.Orange);
 
                         /*if (result.Type == Models.PointType.Pokestop.ToString()) { sb.Insert(0, Emoji.GetEmoji(ctx, Emoji.Pokestop)); }
                         else if (result.Type == Models.PointType.Gym.ToString()) { sb.Insert(0, Emoji.GetEmoji(ctx, Emoji.Gym)); }
                         else { sb.Insert(0, Emoji.GetEmoji(ctx, Emoji.Ingress)); }*/
+
                         // TODO: Proč se někde používá sb.Insert a jinde sb.Append
                         sb.Insert(0, Emoji.GetEmoji(ctx, result.Type));
 
@@ -406,7 +397,7 @@ namespace DiscordBot.Algorithm
 
                 title = (i + 1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, points[i].Type) + " " + originalPoint.Name;
 
-                resultData = CheckData.ManualCheck(ctx, chnl_out, points[i], title, sb.ToString(), DiscordColor.Orange);
+                resultData = ManualCheck(ctx, chnl_out, points[i], title, sb.ToString(), DiscordColor.Orange);
                 // TODO: Zde odchytávat nastalé události a vypisovat zde do chatu co se stalo.
                 // TODO: Vypisovat správný textbox podle změny
                 switch (resultData.Result.Item1)
@@ -494,6 +485,52 @@ namespace DiscordBot.Algorithm
             //List<Pokemon> pokemons = context.Pokemons.Where(i => i.Name.ToLower().Contains(searchString.ToLower())).ToList();
             return pokemons;
         }
+        
+        private async void AddToGymCellsAsync(Point point)
+        {
+            // TODO: Lépe využívat context / new PogoContext
+            // TODO: V metodě vracet bool a kontrolovat, zda proběhlo zapsání v pořádku
+            // TODO: Přidat try / catch - odchytávání výjimek
+            using var context = new PogoContext();
+            GymCell gymCell = context.GymsInCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
+
+            if(gymCell == null)
+            {
+                GymCell newGymCell = new()
+                {
+                    Name = point.IdCell14,
+                    IdCell14 = point.IdCell14,
+                    GymCount = 0,
+                    PokestopCount = 0,
+                    PortalCount = 0,
+                    NeedCheck = false,
+                    LastUpdate = DateTime.Now
+                };
+                context.GymsInCells.Add(newGymCell);               
+                await context.SaveChangesAsync();
+
+                gymCell = context.GymsInCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
+            }
+
+            gymCell.Points.Add(point);
+            await context.SaveChangesAsync();
+
+            switch (point.Type)
+            {
+                case PointType.Pokestop:
+                    gymCell.PokestopCount += 1;
+                    break;
+                case PointType.Gym:
+                case PointType.ExGym:
+                    gymCell.GymCount += 1;
+                    break;
+                case PointType.Portal:
+                    gymCell.PortalCount += 1;
+                    break;
+            }
+            await context.SaveChangesAsync();
+        }
+
         /// <summary>
         /// Kontrola vstupního bodu s databází.
         /// </summary>

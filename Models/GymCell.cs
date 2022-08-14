@@ -1,4 +1,5 @@
-﻿using SQLiteNetExtensions.Attributes;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using SQLiteNetExtensions.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +12,21 @@ using System.Threading.Tasks;
 namespace DiscordBot.Models
 {
     public class GymCell
-    {
+    { 
+    
+        public GymCell()
+        {
+            
+        }
+        private List<Point> _points;
+
+        private GymCell(ILazyLoader lazyLoader)
+        {
+            LazyLoader = lazyLoader;
+        }
+
+        private ILazyLoader LazyLoader { get; set; }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
@@ -24,11 +39,23 @@ namespace DiscordBot.Models
         [Description("Název buňky.")]
         public string Name { get; set; }
 
-        [TextBlob(nameof(PointsBloobbed))]
+        [Required]
+        [StringLength(100, ErrorMessage = "Maximální délka IdCell14 je 100 znaků.")]
+        [Description("ID buňky - level 14.")]
+        public string IdCell14 { get; set; }
+
+        /*[TextBlob(nameof(PointsBloobbed))]
         [Description("List bodů v buňce.")]
         public List<Point> Points { get; set; }
 
-        public string PointsBloobbed { get; set; }
+        public string PointsBloobbed { get; set; }*/
+
+        [Description("List bodů v buňce.")]
+        public virtual List<Point> Points
+        {
+            get => LazyLoader.Load(this, ref _points);
+            set => _points = value;
+        }
 
         [MinLength(0, ErrorMessage = "Minilání počet gymů v buňce je 0.")]
         [MaxLength(10, ErrorMessage = "Maximální počet gymů v buňce je 10.")]
@@ -50,8 +77,7 @@ namespace DiscordBot.Models
         [Description("Kontrola buňky.")]
         public bool NeedCheck { get; set; }
 
-        [DataType(DataType.Date)]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DataType(DataType.DateTime)]
         [Description("Datum a čas poslední aktualizace údajů.")]
         public DateTime LastUpdate { get; set; }
     }       

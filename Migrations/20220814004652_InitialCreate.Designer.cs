@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiscordBot.Migrations
 {
     [DbContext(typeof(PogoContext))]
-    [Migration("20220813000138_InitialCreate")]
+    [Migration("20220814004652_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,8 +29,12 @@ namespace DiscordBot.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("IdCell14")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("LastUpdate")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -40,9 +44,6 @@ namespace DiscordBot.Migrations
 
                     b.Property<bool>("NeedCheck")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("PointsBloobbed")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("PokestopCount")
                         .HasMaxLength(70)
@@ -138,7 +139,6 @@ namespace DiscordBot.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("LastUpdate")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Latitude")
@@ -156,7 +156,6 @@ namespace DiscordBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Type")
-                        .HasMaxLength(50)
                         .HasColumnType("INTEGER");
 
                     b.HasKey("IdPoint");
@@ -176,15 +175,11 @@ namespace DiscordBot.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Form")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Form")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Generation")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Generation")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(150)
@@ -217,15 +212,11 @@ namespace DiscordBot.Migrations
                     b.Property<bool>("Tradable")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Type1")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Type1")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Type2")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Type2")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("IdPokemon");
 
@@ -234,9 +225,12 @@ namespace DiscordBot.Migrations
 
             modelBuilder.Entity("DiscordBot.Models.Point", b =>
                 {
-                    b.HasOne("DiscordBot.Models.GymCell", null)
+                    b.HasOne("DiscordBot.Models.GymCell", "GymCell")
                         .WithMany("Points")
-                        .HasForeignKey("GymCellIdGymCell");
+                        .HasForeignKey("GymCellIdGymCell")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("GymCell");
                 });
 
             modelBuilder.Entity("DiscordBot.Models.GymCell", b =>

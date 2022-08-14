@@ -126,10 +126,16 @@ namespace DiscordBot.Commands
         [Command("pokemons")]
         public async Task Pokemons(CommandContext ctx)
         {
-            DatabaseComm db = new(ctx);            
-            List<Pokemon> pokemons = db.GetPokemons();
-            
-            await ctx.Channel.SendMessageAsync(pokemons[0].Name.ToString()).ConfigureAwait(false);           
+            DatabaseComm db = new(ctx);
+            //List<Pokemon> pokemons = db.GetPokemons();
+            using var context = new PogoContext();
+            //var gymCell = context.GymsInCells.FirstOrDefault(i => i.IdCell14 == "5118679776411779072");
+            var pointCell = context.Points.FirstOrDefault(i => i.Name == "Liberec historická budova 1912");
+            List<Point> points = pointCell.GymCell.Points.ToList();
+            foreach (var point in points)
+            {
+                await ctx.Channel.SendMessageAsync(point.Name).ConfigureAwait(false);
+            }                  
        }
 
         public IEnumerable<Page> GeneratePagesInEmbeds(CommandContext ctx, List<Point> points)

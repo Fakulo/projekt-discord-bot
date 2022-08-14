@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Models
 {
@@ -25,10 +26,9 @@ namespace DiscordBot.Models
         public string Name { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.PokemonForm))]
-        [StringLength(50, ErrorMessage = "Maximální délka PokemonForm je 50 znaků.")]
+        [EnumDataType(typeof(PokemonForm))]
         [Description("Forma pokemona.")]
-        public string Form { get; set; }
+        public PokemonForm Form { get; set; }
 
         [Url]
         [DataType(DataType.ImageUrl)]
@@ -37,22 +37,19 @@ namespace DiscordBot.Models
         public string ImageUrl { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.PokemonType))]
-        [StringLength(50, ErrorMessage = "Maximální délka PokemonType1 je 50 znaků.")]
+        [EnumDataType(typeof(PokemonType))]
         [Description("Typ pokemona 1.")]
-        public string Type1 { get; set; }
+        public PokemonType Type1 { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.PokemonType))]
-        [StringLength(50, ErrorMessage = "Maximální délka PokemonType2 je 50 znaků.")]
+        [EnumDataType(typeof(PokemonType))]
         [Description("Typ pokemona 2.")]
-        public string Type2 { get; set; }
+        public PokemonType Type2 { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.Generation))]
-        [StringLength(50, ErrorMessage = "Maximální délka Generation je 50 znaků.")]
+        [EnumDataType(typeof(Generation))]       
         [Description("Generace pokemona.")]
-        public string Generation { get; set; }
+        public Generation Generation { get; set; }
 
         [DefaultValue("")]
         [StringLength(100, ErrorMessage = "Maximální délka Event je 100 znaků.")]
@@ -83,7 +80,7 @@ namespace DiscordBot.Models
         [Description("Datum uvedení pokemona do hry.")]
         public string Release { get; set; }        
 
-        [DataType(DataType.Date)]
+        [DataType(DataType.DateTime)]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Description("Datum a čas poslední aktualizace údajů.")]
         public DateTime LastUpdate { get; set; }

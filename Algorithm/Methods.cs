@@ -158,7 +158,7 @@ namespace DiscordBot.Algorithm
             await chnl.Result.SendMessageAsync("", false, embed).ConfigureAwait(false);
         }
 
-        internal static Point CreatePoint(string name, PointType type, double lat, double lon, string idCell17, bool needCheck, DateTime dateTime)
+        internal static Point CreatePoint(string name, PointType type, double lat, double lon, string idCell14, string idCell17, bool needCheck, DateTime dateTime)
         {
             Point point = new Point
             {
@@ -166,6 +166,7 @@ namespace DiscordBot.Algorithm
                 Type = type,
                 Latitude = lat,
                 Longitude = lon,
+                IdCell14 = idCell14,
                 IdCell17 = idCell17,
                 NeedCheck = needCheck,
                 LastUpdate = dateTime

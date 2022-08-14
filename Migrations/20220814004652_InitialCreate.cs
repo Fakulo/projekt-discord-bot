@@ -16,7 +16,7 @@ namespace DiscordBot.Migrations
                     IdGymCell = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
-                    PointsBloobbed = table.Column<string>(type: "TEXT", nullable: true),
+                    IdCell14 = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     GymCount = table.Column<int>(type: "INTEGER", maxLength: 10, nullable: false),
                     PokestopCount = table.Column<int>(type: "INTEGER", maxLength: 70, nullable: false),
                     PortalCount = table.Column<int>(type: "INTEGER", maxLength: 100, nullable: false),
@@ -62,11 +62,11 @@ namespace DiscordBot.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     PokedexId = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Form = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Form = table.Column<int>(type: "INTEGER", nullable: false),
                     ImageUrl = table.Column<string>(type: "TEXT", maxLength: 150, nullable: true),
-                    Type1 = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Type2 = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Generation = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Type1 = table.Column<int>(type: "INTEGER", nullable: false),
+                    Type2 = table.Column<int>(type: "INTEGER", nullable: false),
+                    Generation = table.Column<int>(type: "INTEGER", nullable: false),
                     Event = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     Shiny = table.Column<bool>(type: "INTEGER", nullable: false),
                     Tradable = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -89,12 +89,12 @@ namespace DiscordBot.Migrations
                     Latitude = table.Column<double>(type: "REAL", nullable: false),
                     Longitude = table.Column<double>(type: "REAL", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
-                    Type = table.Column<int>(type: "INTEGER", maxLength: 50, nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
                     IdCell14 = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     IdCell17 = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    GymCellIdGymCell = table.Column<int>(type: "INTEGER", nullable: true),
                     NeedCheck = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LastUpdate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    GymCellIdGymCell = table.Column<int>(type: "INTEGER", nullable: true)
+                    LastUpdate = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -103,7 +103,8 @@ namespace DiscordBot.Migrations
                         name: "FK_Points_GymsInCells_GymCellIdGymCell",
                         column: x => x.GymCellIdGymCell,
                         principalTable: "GymsInCells",
-                        principalColumn: "IdGymCell");
+                        principalColumn: "IdGymCell",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateIndex(

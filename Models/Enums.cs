@@ -71,5 +71,22 @@ namespace DiscordBot.Models
             Třetí = 3,
             Finální = 4
         }
+
+        //TODO: Používat i ChangePositionOrAdd
+        /// <summary>
+        /// Stav vstupního bodu
+        /// </summary>
+        public enum State
+        {
+            AddToDB,
+            AddToDBCheck,
+            ChangeName,
+            ChangeNameCheck,
+            ChangePosition,
+            ChangePositionCheck,
+            ChangePositionOrAdd,
+            Duplicate,
+            Unreachable
+        }
     }
 }

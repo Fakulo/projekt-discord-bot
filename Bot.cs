@@ -76,7 +76,8 @@ namespace DiscordBot
             {                  
                Console.WriteLine("Privátní kanál: " + e.Channel.IsPrivate);
                Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
-                await e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
+                
+               // await e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
             }
             Pokemon p = new Pokemon();            
             return Task.CompletedTask;

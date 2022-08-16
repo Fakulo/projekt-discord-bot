@@ -63,8 +63,7 @@ namespace DiscordBot.Algorithm
                             Longitude = items[i].Longitude,
                             IdCell14 = items[i].GetParent(14),
                             IdCell17 = items[i].GetParent(17),
-                            NeedCheck = false,
-                            LastUpdate = DateTime.Now
+                            NeedCheck = NeedCheck.No
                         };
 
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Pokestop));
@@ -105,11 +104,9 @@ namespace DiscordBot.Algorithm
                                 Longitude = items[i].Longitude,
                                 IdCell14 = items[i].GetParent(14),
                                 IdCell17 = items[i].GetParent(17),
-                                NeedCheck = false,
-                                LastUpdate = DateTime.Now
+                                NeedCheck = NeedCheck.No
                             };
 
-                            context.Points.Add(point);
                             await context.SaveChangesAsync();
                             AddToGymCellsAsync(point);
                             Methods.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
@@ -141,7 +138,7 @@ namespace DiscordBot.Algorithm
                         sb.AppendLine(" Name: " + items[i].Name);
 
                         result.Name = items[i].Name;
-                        result.LastUpdate = DateTime.Now;
+                        result.UpdatedAt = DateTime.Now;
 
                         Methods.SendBoxMessage(chnl_out, "Změna názvu bodu.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
                         count[3] += 1;
@@ -170,7 +167,7 @@ namespace DiscordBot.Algorithm
 
                         result.Latitude = items[i].Latitude;
                         result.Longitude = items[i].Longitude;
-                        result.LastUpdate = DateTime.Now;
+                        result.UpdatedAt = DateTime.Now;
 
                         Methods.SendBoxMessage(chnl_out, "Změna souřadnic.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
                         count[4] += 1;
@@ -211,7 +208,7 @@ namespace DiscordBot.Algorithm
                             result.Latitude = items[i].Latitude;
                             result.Longitude = items[i].Longitude;
                             result.IdCell17 = newIdCell17;
-                            result.LastUpdate = DateTime.Now;
+                            result.UpdatedAt = DateTime.Now;
 
                             Methods.SendBoxMessage(chnl_out, "Změna souřadnic bodu.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
                             count[4] += 1;
@@ -230,7 +227,7 @@ namespace DiscordBot.Algorithm
                     case State.Unreachable:
                         Console.WriteLine(items[i].Name);
                         Console.WriteLine("Unreachable!");
-                        result.NeedCheck = true;
+                        result.NeedCheck = NeedCheck.Yes;
 
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Warning));
                         sb.AppendLine(" " + items[i].Name);
@@ -242,7 +239,7 @@ namespace DiscordBot.Algorithm
                     default:
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Warning));
                         sb.AppendLine(" " + items[i].Name);
-                        result.NeedCheck = true;
+                        result.NeedCheck = NeedCheck.Yes;
 
                         Methods.SendBoxMessage(chnl_out, "CHYBA - NUTNÁ KONTROLA V DATABÁZI. (Default)", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
                         count[8] += 1;
@@ -311,7 +308,7 @@ namespace DiscordBot.Algorithm
                     sb.AppendLine(" Nový typ: " + Emoji.GetEmoji(ctx, resultData.Result.Item2) + " " + resultData.Result.Item2.ToString());
 
                     points[i].Type = resultData.Result.Item2;
-                    points[i].LastUpdate = DateTime.Now;
+                    points[i].UpdatedAt = DateTime.Now;
                     
                     await context.SaveChangesAsync();
                     Methods.SendBoxMessage(chnl_out, "Změna proběhla úspěšně.", sb.ToString(), DiscordColor.Green, points[i]);
@@ -356,7 +353,7 @@ namespace DiscordBot.Algorithm
                     sb.AppendLine(" Nový název: " + resultData.Result.Item2);
 
                     points[i].Name = resultData.Result.Item2;
-                    points[i].LastUpdate = DateTime.Now;
+                    points[i].UpdatedAt = DateTime.Now;
                     
                     await context.SaveChangesAsync();
                     Methods.SendBoxMessage(chnl_out, "Změna proběhla úspěšně.", sb.ToString(), DiscordColor.Green, points[i]);
@@ -404,8 +401,8 @@ namespace DiscordBot.Algorithm
                 {
                     case ManualChange.Name:
                         points[i].Name = resultData.Result.Item2;
-                        points[i].LastUpdate = DateTime.Now;
-                        points[i].NeedCheck = false;
+                        points[i].UpdatedAt = DateTime.Now;
+                        points[i].NeedCheck = NeedCheck.No;
                         await context.SaveChangesAsync();
                         Methods.SendBoxMessage(ctx, chnl_out, "Změna názvu proběhla úspěšně.", originalPoint.Name, points[i].Name, points[i]);
                         break;
@@ -414,29 +411,29 @@ namespace DiscordBot.Algorithm
                         {
                             case "Pokestop":
                                 points[i].Type = PointType.Pokestop;
-                                points[i].LastUpdate = DateTime.Now;
-                                points[i].NeedCheck = false;
+                                points[i].UpdatedAt = DateTime.Now;
+                                points[i].NeedCheck = NeedCheck.No;
                                 await context.SaveChangesAsync();
                                 Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "Gym":
                                 points[i].Type = PointType.Gym;
-                                points[i].LastUpdate = DateTime.Now;
-                                points[i].NeedCheck = false;
+                                points[i].UpdatedAt = DateTime.Now;
+                                points[i].NeedCheck = NeedCheck.No;
                                 await context.SaveChangesAsync();
                                 Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "ExGym":
                                 points[i].Type = PointType.ExGym;
-                                points[i].LastUpdate = DateTime.Now;
-                                points[i].NeedCheck = false;
+                                points[i].UpdatedAt = DateTime.Now;
+                                points[i].NeedCheck = NeedCheck.No;
                                 await context.SaveChangesAsync();
                                 Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "Portal":
                                 points[i].Type = PointType.Portal;
-                                points[i].LastUpdate = DateTime.Now;
-                                points[i].NeedCheck = false;
+                                points[i].UpdatedAt = DateTime.Now;
+                                points[i].NeedCheck = NeedCheck.No;
                                 await context.SaveChangesAsync();
                                 Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
@@ -456,8 +453,8 @@ namespace DiscordBot.Algorithm
                     case ManualChange.Coordinates:
                         points[i].Latitude = Double.Parse(resultData.Result.Item2.Split(" ")[0]);
                         points[i].Longitude = Double.Parse(resultData.Result.Item2.Split(" ")[1]);
-                        points[i].LastUpdate = DateTime.Now;
-                        points[i].NeedCheck = false;
+                        points[i].UpdatedAt = DateTime.Now;
+                        points[i].NeedCheck = NeedCheck.No;
                         await context.SaveChangesAsync();
                         Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                         break;
@@ -482,7 +479,7 @@ namespace DiscordBot.Algorithm
         {
             using var context = new PogoContext();
             List<Pokemon> pokemons = context.Pokemons.ToList();
-            //List<Pokemon> pokemons = context.Pokemons.Where(i => i.Name.ToLower().Contains(searchString.ToLower())).ToList();
+            //List<PokemonStat> pokemons = context.Pokemons.Where(i => i.Name.ToLower().Contains(searchString.ToLower())).ToList();
             return pokemons;
         }
         
@@ -492,27 +489,27 @@ namespace DiscordBot.Algorithm
             // TODO: V metodě vracet bool a kontrolovat, zda proběhlo zapsání v pořádku
             // TODO: Přidat try / catch - odchytávání výjimek
             using var context = new PogoContext();
-            GymCell gymCell = context.GymsInCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
+            GymLocationCell gymCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
 
-            if(gymCell == null)
+            if (gymCell == null)
             {
-                GymCell newGymCell = new()
+                GymLocationCell newGymCell = new()
                 {
                     Name = point.IdCell14,
                     IdCell14 = point.IdCell14,
                     GymCount = 0,
                     PokestopCount = 0,
                     PortalCount = 0,
-                    NeedCheck = false,
-                    LastUpdate = DateTime.Now
+                    NeedCheck = NeedCheck.No
                 };
-                context.GymsInCells.Add(newGymCell);               
+                context.GymLocationCells.Add(newGymCell);               
                 await context.SaveChangesAsync();
 
-                gymCell = context.GymsInCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
+                gymCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
             }
-
+            
             gymCell.Points.Add(point);
+            //gymCell.UpdatedAt = DateTime.Now;
             await context.SaveChangesAsync();
 
             switch (point.Type)
@@ -558,7 +555,7 @@ namespace DiscordBot.Algorithm
                     return (State.AddToDBCheck);
                 }
                 // Souřadnice jsou v DB -> změna názvu nebo chyba
-                if (p_lat.IdPoint == p_lng.IdPoint)
+                if (p_lat.PointId == p_lng.PointId)
                 {
                     if (p_cell == null) { return (State.Unreachable); }
                     else { return (State.ChangeName); }
@@ -580,12 +577,12 @@ namespace DiscordBot.Algorithm
                     }
                     else
                     {
-                        if (p_name.IdPoint != p_cell.IdPoint) { return (State.ChangePositionCheck); }
+                        if (p_name.PointId != p_cell.PointId) { return (State.ChangePositionCheck); }
                         return (State.ChangePosition);
                     }
                 }
                 // Souřadnice jsou v DB -> duplikát nebo chyba
-                if (p_lat.IdPoint == p_lng.IdPoint)
+                if (p_lat.PointId == p_lng.PointId)
                 {
                     if (p_cell == null) { return (State.Unreachable); }
                     else { return (State.Duplicate); }

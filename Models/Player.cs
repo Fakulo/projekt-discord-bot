@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -12,11 +13,16 @@ namespace DiscordBot.Models
 {
     public class Player
     {
+        public Player()
+        {
+
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
         [Description("ID uživatele v databázi.")]
-        public int IdPlayer { get; private set; }
+        public int PlayerId { get; private set; }
 
         [Required]
         [StringLength(100, ErrorMessage = "Maximální délka UserName je 150 znaků.")]
@@ -45,51 +51,54 @@ namespace DiscordBot.Models
         [DefaultValue(0)]
         [MinLength(0, ErrorMessage = "Minimální počet bodů je 0.")]
         [Description("Celkový počet bodů, které získal hráč na Discordu za aktivitu.")]
-        public int Points { get; set; }
+        public int TotalPoints { get; set; }
 
-        [Required]
-        [DefaultValue("")]
+        [DefaultValue("N/A")]
         [StringLength(30, ErrorMessage = "Maximální délka TrainerCode je 30 znaků.")]
         [Description("Kód pro přidání do přátel ve hře.")]
         public string TrainerCode { get; set; }
+
+        [DefaultValue("N/A")]
+        [StringLength(70, ErrorMessage = "Maximální délka HomeTerritory je 70 znaků.")]
+        [Description("Domácí území hráče.")]
+        public string HomeTerritory { get; set; }
 
         [Required]
         [DefaultValue(WarningPhase.None)]
         [EnumDataType(typeof(WarningPhase))]
         [Description("Úroveň varování hráče na discordu.")]
-        public WarningPhase Warning { get; set; }
-
-        [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet nachozených kilometrů je 0.")]
-        [Description("Celkový počet nachozených kilometrů ve hře.")]
-        public int DistanceWalked { get; set; }
-
-        [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet chycených pokémonů je 0.")]
-        [Description("Celkový počet chycených pokémonů ve hře.")]
-        public int PokemonCaught { get; set; }
-
-        [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet navštívených pokestopů je 0.")]
-        [Description("Celkový počet navštívených pokestopů ve hře.")]
-        public int PokeStopsVisited { get; set; }
-
-        [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet nasbíraných zkušeností je 0.")]
-        [Description("Celkový počet nasbíraných zkušeností ve hře.")]
-        public int TotalXP { get; set; }
+        public WarningPhase Warning { get; set; }           
 
         [DataType(DataType.DateTime)]
-        [Description("Datum založení účtu ve hře.")]
-        public DateTime StartDate { get; set; }
-
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas poslední aktualizace údajů ze hry.")]
-        public DateTime StatsUpdate { get; set; }
-
-        [DataType(DataType.DateTime)]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Description("Datum a čas poslední aktualizace údajů.")]
-        public DateTime LastUpdate { get; set; }
+        public DateTime UpdatedAt { get; set; }
+
+        [DataType(DataType.DateTime)]
+        [Description("Datum a čas vytvoření hráče.")]
+        public DateTime CreatedAt { get; set; }
+
+        /************************************************************/
+
+        private List<PlayerStat> _playersStats;
+        private List<PointLog> _pointLogs;
+        private ILazyLoader LazyLoader { get; set; }
+        private Player(ILazyLoader lazyLoader)
+        {
+            LazyLoader = lazyLoader;
+        }
+
+        [Description("List seznamu hráče se statistikama.")]
+        public virtual List<PlayerStat> PlayersStats
+        {
+            get => LazyLoader.Load(this, ref _playersStats);
+            set => _playersStats = value;
+        }
+
+        [Description("List přidělených bodů uživateli.")]
+        public virtual List<PointLog> PointLogs
+        {
+            get => LazyLoader.Load(this, ref _pointLogs);
+            set => _pointLogs = value;
+        }
     }
 }

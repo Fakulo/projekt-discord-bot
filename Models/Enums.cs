@@ -88,5 +88,25 @@ namespace DiscordBot.Models
             Duplicate,
             Unreachable
         }
+
+        public enum NeedCheck
+        {
+            No,
+            Yes,
+            Checked
+        }
+
+        public enum PointsCategory
+        {
+            Other,
+            RaidReport,
+            RaidReportMeet,
+            RaidParticipation,
+            QuestReport,
+            Transgression,
+            Violation
+        }
+
+        
     }
 }

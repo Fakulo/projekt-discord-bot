@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -10,15 +12,20 @@ namespace DiscordBot.Models
 {
     public class Pokemon
     {
+        public Pokemon()
+        {
+
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
         [Description("ID pokemona v databázi.")]
-        public int IdPokemon { get; private set; }
+        public int PokemonId { get; private set; }
 
         [Required]
-        [Description("ID pokemona v pokedexu.")]
-        public int PokedexId { get; set; }
+        [Description("Číslo pokemona v pokedexu.")]
+        public int PokedexNumber { get; set; }
 
         [Required]
         [StringLength(100, ErrorMessage = "Maximální délka Name je 100 znaků.")]
@@ -53,12 +60,12 @@ namespace DiscordBot.Models
 
         [DefaultValue("")]
         [StringLength(100, ErrorMessage = "Maximální délka Event je 100 znaků.")]
-        [Description("Pokemon je z eventu.")]
+        [Description("PokemonStat je z eventu.")]
         public string Event { get; set; }
 
         [Required]
         [DefaultValue(false)]
-        [Description("Pokemon může být shiny.")]
+        [Description("PokemonStat může být shiny.")]
         public bool Shiny { get; set; }
 
         [Required]
@@ -76,13 +83,51 @@ namespace DiscordBot.Models
         [Description("Mythical pokemon.")]
         public bool Mythical { get; set; }
 
+        [Required]
+        [DefaultValue(false)]
+        [Description("Regional pokemon.")]
+        public bool Regional { get; set; }
+
         [DefaultValue("N/A")]
+        [StringLength(200, ErrorMessage = "Maximální délka RegionalArea je 200 znaků.")]
+        [Description("Regional pokemon.")]
+        public string RegionalArea { get; set; }
+
+        [DefaultValue("N/A")]
+        [StringLength(50, ErrorMessage = "Maximální délka Release je 50 znaků.")]
         [Description("Datum uvedení pokemona do hry.")]
         public string Release { get; set; }        
 
         [DataType(DataType.DateTime)]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Description("Datum a čas poslední aktualizace údajů.")]
-        public DateTime LastUpdate { get; set; }
+        public DateTime UpdatedAt
+        {
+            get
+            {
+                return this.dateCreated.HasValue
+                   ? this.dateCreated.Value
+                   : DateTime.Now;
+            }
+
+            set { this.dateCreated = value; }
+        }
+
+        /************************************************************/
+
+        private DateTime? dateCreated = null;
+
+        private List<PlayerPokemon> _playersPokemons;
+        private ILazyLoader LazyLoader { get; set; }
+        private Pokemon(ILazyLoader lazyLoader)
+        {
+            LazyLoader = lazyLoader;
+        }
+
+        [Description("List pokemonu v seznamu hráče.")]
+        public virtual List<PlayerPokemon> PlayersPokemons
+        {
+            get => LazyLoader.Load(this, ref _playersPokemons);
+            set => _playersPokemons = value;
+        }
     }
 }

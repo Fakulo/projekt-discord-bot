@@ -3,6 +3,7 @@ using System;
 using DiscordBot.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiscordBot.Migrations
 {
     [DbContext(typeof(PogoContext))]
-    partial class PogoContextModelSnapshot : ModelSnapshot
+    [Migration("20220816000623_AutomatedUpdateAtEdited")]
+    partial class AutomatedUpdateAtEdited
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.7");
@@ -25,9 +27,6 @@ namespace DiscordBot.Migrations
 
                     b.Property<string>("CheckedInfo")
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("GymCount")
@@ -93,7 +92,7 @@ namespace DiscordBot.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
+                        .ValueGeneratedOnUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
 
@@ -137,7 +136,7 @@ namespace DiscordBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
+                        .ValueGeneratedOnUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
 
@@ -173,7 +172,7 @@ namespace DiscordBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
+                        .ValueGeneratedOnUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
 
@@ -192,9 +191,6 @@ namespace DiscordBot.Migrations
 
                     b.Property<string>("CheckedInfo")
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("GymLocationCellId")
@@ -228,7 +224,9 @@ namespace DiscordBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
 
                     b.HasKey("PointId");
 
@@ -330,7 +328,7 @@ namespace DiscordBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
+                        .ValueGeneratedOnUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
 

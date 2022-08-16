@@ -127,11 +127,11 @@ namespace DiscordBot.Commands
         public async Task Pokemons(CommandContext ctx)
         {
             DatabaseComm db = new(ctx);
-            //List<Pokemon> pokemons = db.GetPokemons();
+            //List<PokemonStat> pokemons = db.GetPokemons();
             using var context = new PogoContext();
-            //var gymCell = context.GymsInCells.FirstOrDefault(i => i.IdCell14 == "5118679776411779072");
-            var pointCell = context.Points.FirstOrDefault(i => i.Name == "Liberec historická budova 1912");
-            List<Point> points = pointCell.GymCell.Points.ToList();
+            var gymCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == "5118682267492810752");
+            //var pointCell = context.Points.FirstOrDefault(i => i.Name == "Liberec historická budova 1912");
+            List<Point> points = gymCell.Points.ToList();
             foreach (var point in points)
             {
                 await ctx.Channel.SendMessageAsync(point.Name).ConfigureAwait(false);
@@ -152,7 +152,7 @@ namespace DiscordBot.Commands
                 sb = new StringBuilder();
                 sb.AppendLine(Emoji.GetEmoji(ctx, points[i].Type) + " " + points[i].Type);
                 sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Point) + " " + points[i].Latitude.ToString().Replace(",", ".") + ", " + points[i].Longitude.ToString().Replace(",", "."));
-                sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Edit) + " " + points[i].LastUpdate.ToString());
+                sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Edit) + " " + points[i].UpdatedAt.ToString());
                 
                 var embed = new DiscordEmbedBuilder
                 {

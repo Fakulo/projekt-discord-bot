@@ -8,30 +8,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Models
 {
-    public class GymCell
-    { 
-    
-        public GymCell()
+    public class GymLocationCell : BaseDateEntity
+    {    
+        public GymLocationCell()
         {
             
-        }
-        private List<Point> _points;
-
-        private GymCell(ILazyLoader lazyLoader)
-        {
-            LazyLoader = lazyLoader;
-        }
-
-        private ILazyLoader LazyLoader { get; set; }
+        }        
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
         [Description("ID buňky v databázi.")]
-        public int IdGymCell { get; private set; }
+        public int GymCellId { get; private set; }
 
         [Required]
         [DefaultValue("Buňka")]
@@ -42,20 +34,7 @@ namespace DiscordBot.Models
         [Required]
         [StringLength(100, ErrorMessage = "Maximální délka IdCell14 je 100 znaků.")]
         [Description("ID buňky - level 14.")]
-        public string IdCell14 { get; set; }
-
-        /*[TextBlob(nameof(PointsBloobbed))]
-        [Description("List bodů v buňce.")]
-        public List<Point> Points { get; set; }
-
-        public string PointsBloobbed { get; set; }*/
-
-        [Description("List bodů v buňce.")]
-        public virtual List<Point> Points
-        {
-            get => LazyLoader.Load(this, ref _points);
-            set => _points = value;
-        }
+        public string IdCell14 { get; set; }      
 
         [MinLength(0, ErrorMessage = "Minilání počet gymů v buňce je 0.")]
         [MaxLength(10, ErrorMessage = "Maximální počet gymů v buňce je 10.")]
@@ -73,12 +52,30 @@ namespace DiscordBot.Models
         public int PortalCount { get; set; }
 
         [Required]
-        [DefaultValue(false)]
+        [DefaultValue(NeedCheck.No)]
+        [EnumDataType(typeof(NeedCheck))]
         [Description("Kontrola buňky.")]
-        public bool NeedCheck { get; set; }
+        public NeedCheck NeedCheck { get; set; }
 
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas poslední aktualizace údajů.")]
-        public DateTime LastUpdate { get; set; }
+        [DefaultValue("")]
+        [StringLength(200, ErrorMessage = "Maximální délka CheckedInfo je 200 znaků.")]
+        [Description("Informace o zkontrolovaných bodech.")]
+        public string CheckedInfo { get; set; }        
+
+        /************************************************************/
+
+        private List<Point> _points;
+        private ILazyLoader LazyLoader { get; set; }
+        private GymLocationCell(ILazyLoader lazyLoader)
+        {
+            LazyLoader = lazyLoader;
+        }        
+
+        [Description("List bodů v buňce.")]
+        public virtual List<Point> Points
+        {
+            get => LazyLoader.Load(this, ref _points);
+            set => _points = value;
+        }
     }       
 }

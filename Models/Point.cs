@@ -5,31 +5,24 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 using System.Text;
 using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Models
 {
-    public class Point
+    public class Point : BaseDateEntity
     {
-
         public Point()
         {
 
-        }
-
-        private GymCell _gymCell;
-        private ILazyLoader LazyLoader { get; set; }
-        private Point(ILazyLoader lazyLoader)
-        {
-            LazyLoader = lazyLoader;
-        }
+        }        
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
         [Description("ID bodu v databázi.")]
-        public int IdPoint { get; private set; }
+        public int PointId { get; private set; }
 
         [Required]
         [Description("Zeměpisná šířka bodu.")]
@@ -57,29 +50,37 @@ namespace DiscordBot.Models
         [Required]
         [StringLength(100, ErrorMessage = "Maximální délka IdCell17 je 100 znaků.")]
         [Description("ID buňky - level 17.")]
-        public string IdCell17 { get; set; }
-
-        public GymCell GymCell
-        {
-            get => LazyLoader.Load(this, ref _gymCell);
-            set => _gymCell = value;
-        }
+        public string IdCell17 { get; set; }        
 
         [Required]
-        [DefaultValue(false)]
+        [EnumDataType(typeof(NeedCheck))]
+        [DefaultValue(NeedCheck.No)]
         [Description("Kontrola buňky.")]
-        public bool NeedCheck { get; set; }
+        public NeedCheck NeedCheck { get; set; }
+        
+        [StringLength(200, ErrorMessage = "Maximální délka CheckedInfo je 200 znaků.")]
+        [DefaultValue("")]
+        [Description("Informace o zkontrolovaném bodu.")]
+        public string CheckedInfo { get; set; }        
 
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas poslední aktualizace údajů.")]
-        public DateTime LastUpdate { get; set; }     
+        /************************************************************/
+
+        private GymLocationCell _gymLocationCell;
+        private ILazyLoader LazyLoader { get; set; }
+        private Point(ILazyLoader lazyLoader)
+        {
+            LazyLoader = lazyLoader;
+        }
+
+        [ForeignKey("GymLocationCell")]
+        public int GymLocationCellId { get; set; }
+
+        [IgnoreDataMember]
+        public GymLocationCell GymLocationCell
+        {
+            get => LazyLoader.Load(this, ref _gymLocationCell);
+            set => _gymLocationCell = value;
+        }
 
     }
-    //public enum PointType
-    //{
-    //    Pokestop,
-    //    Gym,
-    //    ExGym,
-    //    Portal
-    //}
 }

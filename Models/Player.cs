@@ -11,7 +11,7 @@ using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Models
 {
-    public class Player
+    public class Player : BaseDateEntity
     {
         public Player()
         {
@@ -36,8 +36,7 @@ namespace DiscordBot.Models
 
         [Required]
         [DefaultValue(1)]
-        [MinLength(1, ErrorMessage = "Minimálání level je 1.")]
-        [MaxLength(50, ErrorMessage = "Maximální level je 50.")]
+        [Range(1, 50, ErrorMessage = "Level musí být mezi 1 - 50.")]
         [Description("Úroveň hráče ve hře.")]
         public int Level { get; set; }
 
@@ -49,7 +48,7 @@ namespace DiscordBot.Models
 
         [Required]
         [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet bodů je 0.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Minimální počet bodů je 0.")]
         [Description("Celkový počet bodů, které získal hráč na Discordu za aktivitu.")]
         public int TotalPoints { get; set; }
 
@@ -69,18 +68,11 @@ namespace DiscordBot.Models
         [Description("Úroveň varování hráče na discordu.")]
         public WarningPhase Warning { get; set; }           
 
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas poslední aktualizace údajů.")]
-        public DateTime UpdatedAt { get; set; }
-
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas vytvoření hráče.")]
-        public DateTime CreatedAt { get; set; }
-
         /************************************************************/
 
         private List<PlayerStat> _playersStats;
         private List<PointLog> _pointLogs;
+        private List<CriminalRecord> _criminalRecords;
         private ILazyLoader LazyLoader { get; set; }
         private Player(ILazyLoader lazyLoader)
         {
@@ -99,6 +91,13 @@ namespace DiscordBot.Models
         {
             get => LazyLoader.Load(this, ref _pointLogs);
             set => _pointLogs = value;
+        }
+
+        [Description("List prohřešků uživatele.")]
+        public virtual List<CriminalRecord> CriminalRecords
+        {
+            get => LazyLoader.Load(this, ref _criminalRecords);
+            set => _criminalRecords = value;
         }
     }
 }

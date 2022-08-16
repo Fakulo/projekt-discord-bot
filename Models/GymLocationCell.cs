@@ -34,20 +34,17 @@ namespace DiscordBot.Models
         [Required]
         [StringLength(100, ErrorMessage = "Maximální délka IdCell14 je 100 znaků.")]
         [Description("ID buňky - level 14.")]
-        public string IdCell14 { get; set; }      
+        public string IdCell14 { get; set; }
 
-        [MinLength(0, ErrorMessage = "Minilání počet gymů v buňce je 0.")]
-        [MaxLength(10, ErrorMessage = "Maximální počet gymů v buňce je 10.")]
+        [Range(0, 10, ErrorMessage = "Rozmezí počtu gymů v buňce je 0-10.")]
         [Description("Počet gymů v buňce.")]
         public int GymCount { get; set; }
 
-        [MinLength(0, ErrorMessage = "Minilání počet pokestopů v buňce je 0.")]
-        [MaxLength(70, ErrorMessage = "Maximální počet pokestopů v buňce je 70.")]
+        [Range(0, 10, ErrorMessage = "Rozmezí počtu pokestopů v buňce je 0-70.")]
         [Description("Počet pokestopů v buňce.")]
         public int PokestopCount { get; set; }
 
-        [MinLength(0, ErrorMessage = "Minilání počet portálů v buňce je 0.")]
-        [MaxLength(100, ErrorMessage = "Maximální počet portálů v buňce je 100.")]
+        [Range(0, 150, ErrorMessage = "Rozmezí počtu portálů v buňce je 0-150.")]
         [Description("Počet portálů v buňce.")]
         public int PortalCount { get; set; }
 
@@ -57,7 +54,7 @@ namespace DiscordBot.Models
         [Description("Kontrola buňky.")]
         public NeedCheck NeedCheck { get; set; }
 
-        [DefaultValue("")]
+        [DefaultValue(" ")]
         [StringLength(200, ErrorMessage = "Maximální délka CheckedInfo je 200 znaků.")]
         [Description("Informace o zkontrolovaných bodech.")]
         public string CheckedInfo { get; set; }        

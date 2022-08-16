@@ -21,6 +21,7 @@ namespace DiscordBot.Database
         public DbSet<PlayerPokemon> PlayerPokemons { get; set; }
         public DbSet<PlayerStat> PlayersStats { get; set; }
         public DbSet<PointLog> PointLogs { get; set; }
+        public DbSet<CriminalRecord> CriminalRecords { get; set; }
 
 
         public string DbPath { get; }
@@ -32,6 +33,8 @@ namespace DiscordBot.Database
         }*/
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Seed();
+
             modelBuilder.Entity<GymLocationCell>()
                 .HasMany(p => p.Points)
                 .WithOne(g => g.GymLocationCell)
@@ -50,6 +53,12 @@ namespace DiscordBot.Database
                 .HasForeignKey(fk => fk.PlayerId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            modelBuilder.Entity<Player>()
+                .HasMany(p => p.CriminalRecords)
+                .WithOne(g => g.Player)
+                .HasForeignKey(fk => fk.PlayerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<PlayerPokemon>().HasKey(sc => new { sc.PokemonId, sc.PlayerStatId });
 
             modelBuilder.Entity<PlayerPokemon>()
@@ -63,38 +72,7 @@ namespace DiscordBot.Database
                 .WithMany(s => s.PlayersPokemons)
                 .HasForeignKey(fk => fk.PlayerStatId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-           /* modelBuilder.Entity<GymLocationCell>()
-            .Property(b => b.UpdatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");*/
-
-            modelBuilder.Entity<Player>()
-            .Property(b => b.UpdatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
-
-            modelBuilder.Entity<Player>()
-            .Property(b => b.CreatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
-
-            modelBuilder.Entity<PlayerPokemon>()
-            .Property(b => b.UpdatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
-
-            modelBuilder.Entity<PlayerStat>()
-            .Property(b => b.UpdatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
-
-           /* modelBuilder.Entity<Point>()
-            .Property(b => b.UpdatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");*/
-
-            modelBuilder.Entity<PointLog>()
-            .Property(b => b.CreatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
-
-            modelBuilder.Entity<Pokemon>()
-            .Property(b => b.UpdatedAt)
-            .HasDefaultValueSql("strftime('%Y-%m-%d %H:%M:%S', datetime('now'))");
+                        
         }
         public override int SaveChanges()
         {
@@ -119,13 +97,14 @@ namespace DiscordBot.Database
             foreach (var entityEntry in entries)
             {
                 string format = "yyyy-MM-dd HH:mm:ss";
-                CultureInfo provider = new("en-GB");
+                CultureInfo provider = new("en-US");
+                var now = DateTime.ParseExact(DateTime.Now.ToString(format), format, provider);
 
-                ((BaseDateEntity)entityEntry.Entity).UpdatedAt = DateTime.ParseExact(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), format, provider);
+                ((BaseDateEntity)entityEntry.Entity).UpdatedAt = now;
 
                 if (entityEntry.State == EntityState.Added)
                 {
-                    ((BaseDateEntity)entityEntry.Entity).CreatedAt = DateTime.ParseExact(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), format, provider);
+                    ((BaseDateEntity)entityEntry.Entity).CreatedAt = now;
                 }
             }
         }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBot.Models
 {
-    public class PlayerPokemon
+    public class PlayerPokemon : BaseDateEntity
     {
         public PlayerPokemon()
         {
@@ -36,10 +36,6 @@ namespace DiscordBot.Models
         [Description("PokemonStat na výměnu.")]
         public bool Tradable { get; set; }
 
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas poslední aktualizace údajů.")]
-        public DateTime UpdatedAt { get; set; }
-
         /************************************************************/
 
         private Pokemon _pokemon;
@@ -54,7 +50,7 @@ namespace DiscordBot.Models
         public int PokemonId { get; set; }
 
         [IgnoreDataMember]
-        public Pokemon Pokemon
+        public virtual Pokemon Pokemon
         {
             get => LazyLoader.Load(this, ref _pokemon);
             set => _pokemon = value;
@@ -64,7 +60,7 @@ namespace DiscordBot.Models
         public int PlayerStatId { get; set; }
 
         [IgnoreDataMember]
-        public PlayerStat PlayerStat
+        public virtual PlayerStat PlayerStat
         {
             get => LazyLoader.Load(this, ref _playerStat);
             set => _playerStat = value;

@@ -10,7 +10,7 @@ using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Models
 {
-    public class Pokemon
+    public class Pokemon : BaseDateEntity
     {
         public Pokemon()
         {
@@ -21,7 +21,7 @@ namespace DiscordBot.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
         [Description("ID pokemona v databázi.")]
-        public int PokemonId { get; private set; }
+        public int PokemonId { get; set; }
 
         [Required]
         [Description("Číslo pokemona v pokedexu.")]
@@ -58,7 +58,7 @@ namespace DiscordBot.Models
         [Description("Generace pokemona.")]
         public Generation Generation { get; set; }
 
-        [DefaultValue("")]
+        [DefaultValue(" ")]
         [StringLength(100, ErrorMessage = "Maximální délka Event je 100 znaků.")]
         [Description("PokemonStat je z eventu.")]
         public string Event { get; set; }
@@ -85,6 +85,11 @@ namespace DiscordBot.Models
 
         [Required]
         [DefaultValue(false)]
+        [Description("Mega evoluce pokemon.")]
+        public bool MegaEvolution { get; set; }
+
+        [Required]
+        [DefaultValue(false)]
         [Description("Regional pokemon.")]
         public bool Regional { get; set; }
 
@@ -96,25 +101,9 @@ namespace DiscordBot.Models
         [DefaultValue("N/A")]
         [StringLength(50, ErrorMessage = "Maximální délka Release je 50 znaků.")]
         [Description("Datum uvedení pokemona do hry.")]
-        public string Release { get; set; }        
-
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas poslední aktualizace údajů.")]
-        public DateTime UpdatedAt
-        {
-            get
-            {
-                return this.dateCreated.HasValue
-                   ? this.dateCreated.Value
-                   : DateTime.Now;
-            }
-
-            set { this.dateCreated = value; }
-        }
-
+        public string Release { get; set; }   
+        
         /************************************************************/
-
-        private DateTime? dateCreated = null;
 
         private List<PlayerPokemon> _playersPokemons;
         private ILazyLoader LazyLoader { get; set; }

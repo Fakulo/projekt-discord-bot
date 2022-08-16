@@ -55,14 +55,17 @@ namespace DiscordBot.Commands
             Item item = new Item(lat, lng);
             await ctx.Channel.SendMessageAsync("LVL 30: " + item.GetCell().Id.ToString()).ConfigureAwait(false);
             await ctx.Channel.SendMessageAsync("LVL 17: " + item.GetParent(17)).ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync("LVL 14: " + item.GetParent(14)).ConfigureAwait(false);
         }
 
         [Command("add")]
         public async Task Add(CommandContext ctx, string name, double lat, double lng)
         {            
-            Item item = new Item(lat, lng, name);
-            List<Item> points = new List<Item>();
-            points.Add(item);
+            Item item = new(lat, lng, name);
+            List<Item> points = new List<Item>
+            {
+                item
+            };
 
             await ctx.Channel.SendMessageAsync("LVL 30: " + item.GetCell().Id.ToString()).ConfigureAwait(false);
             await ctx.Channel.SendMessageAsync("LVL 17: " + item.GetParent(17)).ConfigureAwait(false);

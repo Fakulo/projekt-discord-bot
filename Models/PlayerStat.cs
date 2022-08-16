@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBot.Models
 {
-    public class PlayerStat
+    public class PlayerStat : BaseDateEntity
     {
         public PlayerStat()
         {
@@ -26,32 +26,28 @@ namespace DiscordBot.Models
         public int PlayerStatId { get; private set; }               
 
         [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet nachozených kilometrů je 0.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Minimální počet nachozených kilometrů je 0.")]
         [Description("Celkový počet nachozených kilometrů ve hře.")]
         public int DistanceWalked { get; set; }
 
         [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet chycených pokémonů je 0.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Minimální počet chycených pokémonů je 0.")]
         [Description("Celkový počet chycených pokémonů ve hře.")]
         public int PokemonCaught { get; set; }
 
         [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet navštívených pokestopů je 0.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Minimální počet navštívených pokestopů je 0.")]
         [Description("Celkový počet navštívených pokestopů ve hře.")]
         public int PokeStopsVisited { get; set; }
 
         [DefaultValue(0)]
-        [MinLength(0, ErrorMessage = "Minimální počet nasbíraných zkušeností je 0.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Minimální počet nasbíraných zkušeností je 0.")]
         [Description("Celkový počet nasbíraných zkušeností ve hře.")]
         public int TotalXP { get; set; }
 
         [DataType(DataType.DateTime)]
         [Description("Datum založení účtu ve hře.")]
         public DateTime StartDate { get; set; }
-
-        [DataType(DataType.DateTime)]
-        [Description("Datum a čas poslední aktualizace údajů ze hry.")]
-        public DateTime UpdatedAt { get; set; }
 
         /************************************************************/
 

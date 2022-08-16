@@ -106,7 +106,7 @@ namespace DiscordBot.Models
             Transgression,
             Violation
         }
+          
 
-        
     }
 }

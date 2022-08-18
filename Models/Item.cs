@@ -19,14 +19,12 @@ namespace DiscordBot.Models
             this.Latitude = lat;
             this.Longitude = lgn;
             this.Name = name;
-            //this.Cell = new S2Cell(S2LatLng.FromDegrees(lat, lgn));
         }
         public Item(double lat, double lgn)
         {
             this.Latitude = lat;
             this.Longitude = lgn;
             this.Name = "-bez názvu-";
-            //this.Cell = new S2Cell(S2LatLng.FromDegrees(lat, lgn));
         }
         public S2Cell GetCell()
         {

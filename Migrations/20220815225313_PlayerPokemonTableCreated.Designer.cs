@@ -3,6 +3,7 @@ using System;
 using DiscordBot.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,37 +11,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiscordBot.Migrations
 {
     [DbContext(typeof(PogoContext))]
-    partial class PogoContextModelSnapshot : ModelSnapshot
+    [Migration("20220815225313_PlayerPokemonTableCreated")]
+    partial class PlayerPokemonTableCreated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.7");
-
-            modelBuilder.Entity("DiscordBot.Models.CriminalRecord", b =>
-                {
-                    b.Property<int>("CriminalRecordId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ChatEvidence")
-                        .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Info")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("CriminalRecordId");
-
-                    b.HasIndex("PlayerId");
-
-                    b.ToTable("CriminalRecords");
-                });
 
             modelBuilder.Entity("DiscordBot.Models.GymLocationCell", b =>
                 {
@@ -52,15 +29,16 @@ namespace DiscordBot.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("GymCount")
+                        .HasMaxLength(10)
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("IdCell14")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastUpdate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -72,13 +50,12 @@ namespace DiscordBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("PokestopCount")
+                        .HasMaxLength(70)
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("PortalCount")
+                        .HasMaxLength(100)
                         .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("GymCellId");
 
@@ -91,27 +68,29 @@ namespace DiscordBot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("HomeTerritory")
                         .HasMaxLength(70)
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("LastUpdate")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Level")
+                        .HasMaxLength(50)
                         .HasColumnType("INTEGER");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StatsUpdate")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Team")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TotalPoints")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("TrainerCode")
                         .HasMaxLength(30)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserId")
@@ -140,9 +119,6 @@ namespace DiscordBot.Migrations
                     b.Property<int>("PlayerStatId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("Lucky")
                         .HasColumnType("INTEGER");
 
@@ -156,9 +132,6 @@ namespace DiscordBot.Migrations
                     b.Property<bool>("Tradable")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("PokemonId", "PlayerStatId");
 
                     b.HasIndex("PlayerStatId");
@@ -171,9 +144,6 @@ namespace DiscordBot.Migrations
                     b.Property<int>("PlayerStatId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("DistanceWalked")
                         .HasColumnType("INTEGER");
@@ -193,9 +163,6 @@ namespace DiscordBot.Migrations
                     b.Property<int>("TotalXP")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("PlayerStatId");
 
                     b.HasIndex("PlayerId");
@@ -213,9 +180,6 @@ namespace DiscordBot.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("GymLocationCellId")
                         .HasColumnType("INTEGER");
 
@@ -227,6 +191,9 @@ namespace DiscordBot.Migrations
                     b.Property<string>("IdCell17")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastUpdate")
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Latitude")
@@ -246,9 +213,6 @@ namespace DiscordBot.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("PointId");
 
                     b.HasIndex("GymLocationCellId");
@@ -256,50 +220,11 @@ namespace DiscordBot.Migrations
                     b.ToTable("Points");
                 });
 
-            modelBuilder.Entity("DiscordBot.Models.PointLog", b =>
-                {
-                    b.Property<int>("PointLogId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("AssignedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Category")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("PointLogId");
-
-                    b.HasIndex("PlayerId");
-
-                    b.ToTable("PointLogs");
-                });
-
             modelBuilder.Entity("DiscordBot.Models.Pokemon", b =>
                 {
                     b.Property<int>("PokemonId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Event")
                         .HasMaxLength(100)
@@ -315,10 +240,11 @@ namespace DiscordBot.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("Legendary")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("LastUpdate")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("MegaEvolution")
+                    b.Property<bool>("Legendary")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("Mythical")
@@ -355,91 +281,9 @@ namespace DiscordBot.Migrations
                     b.Property<int>("Type2")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("PokemonId");
 
                     b.ToTable("Pokemons");
-
-                    b.HasData(
-                        new
-                        {
-                            PokemonId = 1,
-                            CreatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified),
-                            Event = " ",
-                            Form = 0,
-                            Generation = 1,
-                            ImageUrl = "https://archives.bulbagarden.net/media/upload/thumb/2/21/001Bulbasaur.png/250px-001Bulbasaur.png",
-                            Legendary = false,
-                            MegaEvolution = false,
-                            Mythical = false,
-                            Name = "Bulbasaur",
-                            PokedexNumber = 1,
-                            Regional = false,
-                            RegionalArea = "N/A",
-                            Release = "Červenec 2016",
-                            Shiny = true,
-                            Tradable = true,
-                            Type1 = 12,
-                            Type2 = 4,
-                            UpdatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            PokemonId = 2,
-                            CreatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified),
-                            Event = " ",
-                            Form = 0,
-                            Generation = 1,
-                            ImageUrl = "https://archives.bulbagarden.net/media/upload/thumb/7/73/002Ivysaur.png/250px-002Ivysaur.png",
-                            Legendary = false,
-                            MegaEvolution = false,
-                            Mythical = false,
-                            Name = "Ivysaur",
-                            PokedexNumber = 2,
-                            Regional = false,
-                            RegionalArea = "N/A",
-                            Release = "Červenec 2016",
-                            Shiny = true,
-                            Tradable = true,
-                            Type1 = 12,
-                            Type2 = 4,
-                            UpdatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            PokemonId = 3,
-                            CreatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified),
-                            Event = " ",
-                            Form = 0,
-                            Generation = 1,
-                            ImageUrl = "https://archives.bulbagarden.net/media/upload/thumb/a/ae/003Venusaur.png/250px-003Venusaur.png",
-                            Legendary = false,
-                            MegaEvolution = false,
-                            Mythical = false,
-                            Name = "Venusaur",
-                            PokedexNumber = 3,
-                            Regional = false,
-                            RegionalArea = "N/A",
-                            Release = "Červenec 2016",
-                            Shiny = true,
-                            Tradable = true,
-                            Type1 = 12,
-                            Type2 = 4,
-                            UpdatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified)
-                        });
-                });
-
-            modelBuilder.Entity("DiscordBot.Models.CriminalRecord", b =>
-                {
-                    b.HasOne("DiscordBot.Models.Player", "Player")
-                        .WithMany("CriminalRecords")
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("DiscordBot.Models.PlayerPokemon", b =>
@@ -483,17 +327,6 @@ namespace DiscordBot.Migrations
                     b.Navigation("GymLocationCell");
                 });
 
-            modelBuilder.Entity("DiscordBot.Models.PointLog", b =>
-                {
-                    b.HasOne("DiscordBot.Models.Player", "Player")
-                        .WithMany("PointLogs")
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-                });
-
             modelBuilder.Entity("DiscordBot.Models.GymLocationCell", b =>
                 {
                     b.Navigation("Points");
@@ -501,11 +334,7 @@ namespace DiscordBot.Migrations
 
             modelBuilder.Entity("DiscordBot.Models.Player", b =>
                 {
-                    b.Navigation("CriminalRecords");
-
                     b.Navigation("PlayersStats");
-
-                    b.Navigation("PointLogs");
                 });
 
             modelBuilder.Entity("DiscordBot.Models.PlayerStat", b =>

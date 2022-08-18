@@ -3,6 +3,7 @@ using System;
 using DiscordBot.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiscordBot.Migrations
 {
     [DbContext(typeof(PogoContext))]
-    partial class PogoContextModelSnapshot : ModelSnapshot
+    [Migration("20220816214405_AutomatedUpdateAtEdited5")]
+    partial class AutomatedUpdateAtEdited5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.7");
@@ -318,9 +320,6 @@ namespace DiscordBot.Migrations
                     b.Property<bool>("Legendary")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("MegaEvolution")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("Mythical")
                         .HasColumnType("INTEGER");
 
@@ -366,68 +365,22 @@ namespace DiscordBot.Migrations
                         new
                         {
                             PokemonId = 1,
-                            CreatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified),
-                            Event = " ",
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Form = 0,
                             Generation = 1,
                             ImageUrl = "https://archives.bulbagarden.net/media/upload/thumb/2/21/001Bulbasaur.png/250px-001Bulbasaur.png",
                             Legendary = false,
-                            MegaEvolution = false,
                             Mythical = false,
                             Name = "Bulbasaur",
                             PokedexNumber = 1,
                             Regional = false,
-                            RegionalArea = "N/A",
+                            RegionalArea = "Not regional.",
                             Release = "Červenec 2016",
                             Shiny = true,
                             Tradable = true,
                             Type1 = 12,
                             Type2 = 4,
-                            UpdatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            PokemonId = 2,
-                            CreatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified),
-                            Event = " ",
-                            Form = 0,
-                            Generation = 1,
-                            ImageUrl = "https://archives.bulbagarden.net/media/upload/thumb/7/73/002Ivysaur.png/250px-002Ivysaur.png",
-                            Legendary = false,
-                            MegaEvolution = false,
-                            Mythical = false,
-                            Name = "Ivysaur",
-                            PokedexNumber = 2,
-                            Regional = false,
-                            RegionalArea = "N/A",
-                            Release = "Červenec 2016",
-                            Shiny = true,
-                            Tradable = true,
-                            Type1 = 12,
-                            Type2 = 4,
-                            UpdatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            PokemonId = 3,
-                            CreatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified),
-                            Event = " ",
-                            Form = 0,
-                            Generation = 1,
-                            ImageUrl = "https://archives.bulbagarden.net/media/upload/thumb/a/ae/003Venusaur.png/250px-003Venusaur.png",
-                            Legendary = false,
-                            MegaEvolution = false,
-                            Mythical = false,
-                            Name = "Venusaur",
-                            PokedexNumber = 3,
-                            Regional = false,
-                            RegionalArea = "N/A",
-                            Release = "Červenec 2016",
-                            Shiny = true,
-                            Tradable = true,
-                            Type1 = 12,
-                            Type2 = 4,
-                            UpdatedAt = new DateTime(2022, 8, 16, 23, 58, 37, 0, DateTimeKind.Unspecified)
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 

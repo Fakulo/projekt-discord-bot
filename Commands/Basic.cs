@@ -55,14 +55,17 @@ namespace DiscordBot.Commands
             Item item = new Item(lat, lng);
             await ctx.Channel.SendMessageAsync("LVL 30: " + item.GetCell().Id.ToString()).ConfigureAwait(false);
             await ctx.Channel.SendMessageAsync("LVL 17: " + item.GetParent(17)).ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync("LVL 14: " + item.GetParent(14)).ConfigureAwait(false);
         }
 
         [Command("add")]
         public async Task Add(CommandContext ctx, string name, double lat, double lng)
         {            
-            Item item = new Item(lat, lng, name);
-            List<Item> points = new List<Item>();
-            points.Add(item);
+            Item item = new(lat, lng, name);
+            List<Item> points = new List<Item>
+            {
+                item
+            };
 
             await ctx.Channel.SendMessageAsync("LVL 30: " + item.GetCell().Id.ToString()).ConfigureAwait(false);
             await ctx.Channel.SendMessageAsync("LVL 17: " + item.GetParent(17)).ConfigureAwait(false);
@@ -126,11 +129,17 @@ namespace DiscordBot.Commands
         [Command("pokemons")]
         public async Task Pokemons(CommandContext ctx)
         {
-            DatabaseComm db = new(ctx);            
-            List<Pokemon> pokemons = db.GetPokemons();
-            
-            await ctx.Channel.SendMessageAsync(pokemons[0].Name.ToString()).ConfigureAwait(false);           
-        }
+            DatabaseComm db = new(ctx);
+            //List<PokemonStat> pokemons = db.GetPokemons();
+            using var context = new PogoContext();
+            var gymCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == "5118682267492810752");
+            //var pointCell = context.Points.FirstOrDefault(i => i.Name == "Liberec historická budova 1912");
+            List<Point> points = gymCell.Points.ToList();
+            foreach (var point in points)
+            {
+                await ctx.Channel.SendMessageAsync(point.Name).ConfigureAwait(false);
+            }                  
+       }
 
         public IEnumerable<Page> GeneratePagesInEmbeds(CommandContext ctx, List<Point> points)
         {
@@ -144,9 +153,9 @@ namespace DiscordBot.Commands
             for (int i = 0; i < points.Count; i++)
             {
                 sb = new StringBuilder();
-                sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(points[i].Type)) + " " + points[i].Type);
+                sb.AppendLine(Emoji.GetEmoji(ctx, points[i].Type) + " " + points[i].Type);
                 sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Point) + " " + points[i].Latitude.ToString().Replace(",", ".") + ", " + points[i].Longitude.ToString().Replace(",", "."));
-                sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Edit) + " " + points[i].LastUpdate.ToString());
+                sb.AppendLine(Emoji.GetEmoji(ctx, Emoji.Edit) + " " + points[i].UpdatedAt.ToString());
                 
                 var embed = new DiscordEmbedBuilder
                 {

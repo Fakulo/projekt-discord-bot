@@ -118,7 +118,7 @@ namespace DiscordBot.Algorithm
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = Emoji.GetEmoji(ctx, Enum.Parse<PointType>(p.Type)) + " " + newName,
+                Title = Emoji.GetEmoji(ctx, p.Type) + " " + newName,
                 Description = sb.ToString(),
                 Color = DiscordColor.Green,
                 Timestamp = DateTime.Now,
@@ -148,7 +148,7 @@ namespace DiscordBot.Algorithm
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = Emoji.GetEmoji(ctx, Enum.Parse<PointType>(p.Type)) + " " + p.Name,
+                Title = Emoji.GetEmoji(ctx, p.Type) + " " + p.Name,
                 Description = sb.ToString(),
                 Color = DiscordColor.Green,
                 Timestamp = DateTime.Now,
@@ -158,18 +158,18 @@ namespace DiscordBot.Algorithm
             await chnl.Result.SendMessageAsync("", false, embed).ConfigureAwait(false);
         }
 
-        internal static Point CreatePoint(string name, PointType type, bool isExGym, double lat, double lon, string idCell17, bool needCheck, DateTime dateTime)
+        internal static Point CreatePoint(string name, PointType type, double lat, double lon, string idCell14, string idCell17, NeedCheck needCheck, DateTime dateTime)
         {
             Point point = new Point
             {
                 Name = name,
-                Type = type.ToString(),
-                ExGym = isExGym,
+                Type = type,
                 Latitude = lat,
                 Longitude = lon,
+                IdCell14 = idCell14,
                 IdCell17 = idCell17,
                 NeedCheck = needCheck,
-                LastUpdate = dateTime
+                UpdatedAt = dateTime
             };
             return point;
         }     

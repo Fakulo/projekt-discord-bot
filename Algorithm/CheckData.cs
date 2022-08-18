@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Algorithm
 {
@@ -26,7 +27,7 @@ namespace DiscordBot.Algorithm
 
             using var context = new PogoContext();
             var list = (from p in context.Points
-                        where p.NeedCheck.Equals(true)
+                        where p.NeedCheck.Equals(NeedCheck.Yes)
                         select p).ToList();
             return list;
         }
@@ -40,7 +41,7 @@ namespace DiscordBot.Algorithm
         /// <param name="description">Text v MessageBoxu</param>
         /// <param name="color">Barva MessageBoxu</param>
         /// <returns>(true,typ bodu) v případě potvrzení nebo (false,typ bodu) v případě zamítnutí</returns>
-        public static async Task<(bool, Enums.PointType)> AddCheckPoint(CommandContext ctx, Task<DiscordChannel> chnl, Item p, string title, string description, DiscordColor color)
+        public static async Task<(bool, PointType)> AddCheckPoint(CommandContext ctx, Task<DiscordChannel> chnl, Item p, string title, string description, DiscordColor color)
         {
             var checkEmbed = new DiscordEmbedBuilder
             {
@@ -76,27 +77,27 @@ namespace DiscordBot.Algorithm
             {
                 await message.DeleteAsync();
                 Methods.SendBoxMessage(chnl, "Časový limit vypršel - BOD NEPŘIDÁN.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
-                return (false, Enums.PointType.Portal);
+                return (false, PointType.Portal);
             }
             // Uživatel zareaguje na pokestop - vrací se true a typ pokestop
             if (reactionResult.Emoji == pokestopEmoji)
             {
                 await message.DeleteAsync();
-                return (true, Enums.PointType.Pokestop);
+                return (true, PointType.Pokestop);
             }
             // Uživatel zareaguje na portal - vrací se true a typ portal
             else if (reactionResult.Emoji == ingressEmoji)
             {
                 await message.DeleteAsync();
-                return (true, Enums.PointType.Portal);
+                return (true, PointType.Portal);
             }
             // Uživatel zareaguje na křížek - vrací se false a typ portal
             else if (reactionResult.Emoji == cancelEmoji)
             {
                 await message.DeleteAsync();
-                return (false, Enums.PointType.Portal);
+                return (false, PointType.Portal);
             }
-            return (false, Enums.PointType.Portal);
+            return (false, PointType.Portal);
         }
 
         /// <summary>
@@ -170,7 +171,7 @@ namespace DiscordBot.Algorithm
         /// <param name="description"></param>
         /// <param name="color">Barva MessageBoxu</param>
         /// <returns>(true,typ bodu) v případě změny nebo (false,typ bodu) v případě odmítnutí změny</returns>
-        public static async Task<(bool, Enums.PointType)> ChangeType(CommandContext ctx, Task<DiscordChannel> chnl, Point p, string title, string description, DiscordColor color)
+        public static async Task<(bool, PointType)> ChangeType(CommandContext ctx, Task<DiscordChannel> chnl, Point p, string title, string description, DiscordColor color)
         {
             var checkEmbed = new DiscordEmbedBuilder
             {
@@ -191,10 +192,10 @@ namespace DiscordBot.Algorithm
             var skipEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.ArrowRight);
 
             // Vytvoření reakcí
-            if (p.Type != Enums.PointType.Pokestop.ToString()) { await message.CreateReactionAsync(pokestopEmoji); }
-            if (p.Type != Enums.PointType.Gym.ToString()) { await message.CreateReactionAsync(gymEmoji); }
-            if (p.Type != Enums.PointType.ExGym.ToString()) { await message.CreateReactionAsync(exGymEmoji); }
-            if (p.Type != Enums.PointType.Portal.ToString()) { await message.CreateReactionAsync(portalEmoji); }            
+            if (p.Type != PointType.Pokestop) { await message.CreateReactionAsync(pokestopEmoji); }
+            if (p.Type != PointType.Gym) { await message.CreateReactionAsync(gymEmoji); }
+            if (p.Type != PointType.ExGym) { await message.CreateReactionAsync(exGymEmoji); }
+            if (p.Type != PointType.Portal) { await message.CreateReactionAsync(portalEmoji); }            
 
             await message.CreateReactionAsync(skipEmoji);
 
@@ -211,39 +212,39 @@ namespace DiscordBot.Algorithm
             {
                 await message.DeleteAsync();
                 Methods.SendBoxMessage(chnl, "Časový limit vypršel - TYP NEZMĚNĚN.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
-                return (false, Enums.PointType.Portal);
+                return (false, PointType.Portal);
             }
             // Uživatel zareaguje na Pokestop - vrací se true + typ Pokestop
             if (reactionResult.Emoji == pokestopEmoji)
             {
                 await message.DeleteAsync();
-                return (true, Enums.PointType.Pokestop);
+                return (true, PointType.Pokestop);
             }
             // Uživatel zareaguje na Gym - vrací se true + typ Gym
             else if (reactionResult.Emoji == gymEmoji)
             {
                 await message.DeleteAsync();
-                return (true, Enums.PointType.Gym);
+                return (true, PointType.Gym);
             }
             // Uživatel zareaguje na ExGym - vrací se true + typ ExGym
             else if (reactionResult.Emoji == exGymEmoji)
             {
                 await message.DeleteAsync();
-                return (true, Enums.PointType.ExGym);
+                return (true, PointType.ExGym);
             }
             // Uživatel zareaguje na Portál - vrací se true + typ Portál
             else if (reactionResult.Emoji == portalEmoji)
             {
                 await message.DeleteAsync();
-                return (true, Enums.PointType.Portal);
+                return (true, PointType.Portal);
             }
             // Uživatel zareaguje na přeskočení - vrací se false + typ Portál
             else if (reactionResult.Emoji == skipEmoji)
             {
                 await message.DeleteAsync();
-                return (false, Enums.PointType.Portal);
+                return (false, PointType.Portal);
             }
-            return (false, Enums.PointType.Portal);
+            return (false, PointType.Portal);
         }
 
         /// <summary>
@@ -281,11 +282,11 @@ namespace DiscordBot.Algorithm
             Task<MessageContext> messageResult = interactivity.WaitForMessageAsync(x => x.Channel.Id == 842805476973608961 && x.Author.Id == ctx.User.Id, TimeSpan.FromSeconds(30));
             Task<ReactionContext> reactionResult = interactivity.WaitForReactionAsync(x => x == skipEmoji, ctx.User, TimeSpan.FromSeconds(30));
 
-            List<Task> tasks = new List<Task> { messageResult, reactionResult };
+            List<Task> tasks = new() { messageResult, reactionResult };
 
             var result = await Task.WhenAny(tasks);
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(p.Type)) + " " + p.Name);
+            StringBuilder sb = new();
+            sb.AppendLine(Emoji.GetEmoji(ctx, p.Type) + " " + p.Name);
             sb.AppendLine();
 
             if (result == messageResult)
@@ -407,10 +408,10 @@ namespace DiscordBot.Algorithm
             {
                 await message.DeleteAsync();
 
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine(Emoji.GetEmoji(ctx, Enum.Parse<Enums.PointType>(p.Type)) + " " + p.Name);
+                StringBuilder sb = new();
+                sb.AppendLine(Emoji.GetEmoji(ctx, p.Type) + " " + p.Name);
 
-                StringBuilder sbr = new StringBuilder();
+                StringBuilder sbr = new();
                 sbr.AppendLine("ZMĚNA NÁZVU:");
                 sbr.Append("Napiš název nebo zruš volbu pomocí ");
                 sbr.Append(Emoji.GetEmoji(ctx, Emoji.RedCross));
@@ -434,7 +435,7 @@ namespace DiscordBot.Algorithm
                 Task<MessageContext> messageResult2 = interactivity.WaitForMessageAsync(x => x.Channel.Id == 842805476973608961 && x.Author.Id == ctx.User.Id, TimeSpan.FromSeconds(30));
                 Task<ReactionContext> reactionResult2 = interactivity.WaitForReactionAsync(x => x == crossEmoji, ctx.User, TimeSpan.FromSeconds(30));
                 
-                List<Task> tasks = new List<Task> { messageResult2, reactionResult2 };
+                List<Task> tasks = new() { messageResult2, reactionResult2 };
 
                 var result = await Task.WhenAny(tasks);
 

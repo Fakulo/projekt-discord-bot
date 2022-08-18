@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DiscordBot.Models
 {
-    class Enums
+    public class Enums
     {
         public enum PointType
         {
@@ -43,6 +43,13 @@ namespace DiscordBot.Models
             Galarian,
             Hisuian
         }
+        public enum Team
+        {
+            Valor,
+            Mystic,
+            Instinct,
+            None
+        }
         public enum Generation : int
         {
             Kanto = 1,
@@ -55,5 +62,51 @@ namespace DiscordBot.Models
             Galar = 8,
             Paldea = 9
         }
+
+        public enum WarningPhase : int
+        {
+            None = 0,
+            První = 1,
+            Druhá = 2,
+            Třetí = 3,
+            Finální = 4
+        }
+
+        //TODO: Používat i ChangePositionOrAdd
+        /// <summary>
+        /// Stav vstupního bodu
+        /// </summary>
+        public enum State
+        {
+            AddToDB,
+            AddToDBCheck,
+            ChangeName,
+            ChangeNameCheck,
+            ChangePosition,
+            ChangePositionCheck,
+            ChangePositionOrAdd,
+            Duplicate,
+            Unreachable
+        }
+
+        public enum NeedCheck
+        {
+            No,
+            Yes,
+            Checked
+        }
+
+        public enum PointsCategory
+        {
+            Other,
+            RaidReport,
+            RaidReportMeet,
+            RaidParticipation,
+            QuestReport,
+            Transgression,
+            Violation
+        }
+          
+
     }
 }

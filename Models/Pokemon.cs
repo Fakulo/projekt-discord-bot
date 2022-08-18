@@ -1,75 +1,122 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Models
 {
-    public class Pokemon
+    public class Pokemon : BaseDateEntity
     {
+        public Pokemon()
+        {
+
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Required]
-        public int IdPokemon { get; private set; }
+        [Description("ID pokemona v databázi.")]
+        public int PokemonId { get; set; }
 
         [Required]
-        public int PokedexId { get; set; }
+        [Description("Číslo pokemona v pokedexu.")]
+        public int PokedexNumber { get; set; }
 
         [Required]
         [StringLength(100, ErrorMessage = "Maximální délka Name je 100 znaků.")]
+        [Description("Jméno pokemona.")]
         public string Name { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.PokemonForm))]
-        [StringLength(50, ErrorMessage = "Maximální délka PokemonForm je 50 znaků.")]
-        public string Form { get; set; }
+        [EnumDataType(typeof(PokemonForm))]
+        [Description("Forma pokemona.")]
+        public PokemonForm Form { get; set; }
 
         [Url]
         [DataType(DataType.ImageUrl)]
         [StringLength(150, ErrorMessage = "Maximální délka ImageUrl je 150 znaků.")]
+        [Description("Odkaz na obrázek pokemona.")]
         public string ImageUrl { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.PokemonType))]
-        [StringLength(50, ErrorMessage = "Maximální délka PokemonType1 je 50 znaků.")]
-        public string Type1 { get; set; }
+        [EnumDataType(typeof(PokemonType))]
+        [Description("Typ pokemona 1.")]
+        public PokemonType Type1 { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.PokemonType))]
-        [StringLength(50, ErrorMessage = "Maximální délka PokemonType2 je 50 znaků.")]
-        public string Type2 { get; set; }
+        [EnumDataType(typeof(PokemonType))]
+        [Description("Typ pokemona 2.")]
+        public PokemonType Type2 { get; set; }
 
         [Required]
-        [EnumDataType(typeof(Enums.Generation))]
-        [StringLength(50, ErrorMessage = "Maximální délka Generation je 50 znaků.")]
-        public string Generation { get; set; }
+        [EnumDataType(typeof(Generation))]       
+        [Description("Generace pokemona.")]
+        public Generation Generation { get; set; }
 
-        [DefaultValue("")]
+        [DefaultValue(" ")]
         [StringLength(100, ErrorMessage = "Maximální délka Event je 100 znaků.")]
+        [Description("PokemonStat je z eventu.")]
         public string Event { get; set; }
 
         [Required]
         [DefaultValue(false)]
+        [Description("PokemonStat může být shiny.")]
         public bool Shiny { get; set; }
 
         [Required]
         [DefaultValue(true)]
+        [Description("Lze pokemona vyměnit.")]
         public bool Tradable { get; set; }
 
         [Required]
         [DefaultValue(false)]
+        [Description("Legendary pokemon.")]
         public bool Legendary { get; set; }
 
         [Required]
         [DefaultValue(false)]
+        [Description("Mythical pokemon.")]
         public bool Mythical { get; set; }
 
-        [DefaultValue("N/A")]
-        public string Release { get; set; }        
+        [Required]
+        [DefaultValue(false)]
+        [Description("Mega evoluce pokemon.")]
+        public bool MegaEvolution { get; set; }
 
-        [DataType(DataType.Date)]
-        public DateTime LastUpdate { get; set; }
+        [Required]
+        [DefaultValue(false)]
+        [Description("Regional pokemon.")]
+        public bool Regional { get; set; }
+
+        [DefaultValue("N/A")]
+        [StringLength(200, ErrorMessage = "Maximální délka RegionalArea je 200 znaků.")]
+        [Description("Regional pokemon.")]
+        public string RegionalArea { get; set; }
+
+        [DefaultValue("N/A")]
+        [StringLength(50, ErrorMessage = "Maximální délka Release je 50 znaků.")]
+        [Description("Datum uvedení pokemona do hry.")]
+        public string Release { get; set; }   
+        
+        /************************************************************/
+
+        private List<PlayerPokemon> _playersPokemons;
+        private ILazyLoader LazyLoader { get; set; }
+        private Pokemon(ILazyLoader lazyLoader)
+        {
+            LazyLoader = lazyLoader;
+        }
+
+        [Description("List pokemonu v seznamu hráče.")]
+        public virtual List<PlayerPokemon> PlayersPokemons
+        {
+            get => LazyLoader.Load(this, ref _playersPokemons);
+            set => _playersPokemons = value;
+        }
     }
 }

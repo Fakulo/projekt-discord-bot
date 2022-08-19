@@ -19,6 +19,7 @@ namespace DiscordBot
     {
         public DiscordClient Client { get; private set; }
         public CommandsNextModule Commands { get; private set; }
+        public RaidHandler RaidHandler { get; private set; }
 
         public async Task RunAsync()
         {
@@ -43,12 +44,14 @@ namespace DiscordBot
 
             Client.Ready += OnClientReady;
 
+            RaidHandler = new();
+
             Client.UseInteractivity(new InteractivityConfiguration
             { 
                 Timeout = TimeSpan.FromSeconds(30)
             });
 
-            Client.MessageCreated += OnTypingReady;            
+            Client.MessageCreated += MessageCreatedHandler;            
 
             
 
@@ -70,17 +73,17 @@ namespace DiscordBot
 
         }        
 
-        private async Task<Task> OnTypingReady(MessageCreateEventArgs e)
+        private async Task<Task> MessageCreatedHandler(MessageCreateEventArgs e)
         {
             if (e.Author.Id != e.Client.CurrentUser.Id)
-            {                  
-               Console.WriteLine("Privátní kanál: " + e.Channel.IsPrivate);
-               Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
-                
-               // await e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
-            }
-            Pokemon p = new Pokemon();            
-            return Task.CompletedTask;
+            {
+                //e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
+                Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
+
+                await RaidHandler.ProcessMessage(e);
+                               
+            }      
+            return Task.FromResult(Task.CompletedTask);
         }        
 
         private Task OnClientReady(ReadyEventArgs e)

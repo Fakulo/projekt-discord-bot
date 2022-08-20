@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DiscordBot.Models;
 using System.Text.RegularExpressions;
+using DiscordBot.Database;
 
 namespace DiscordBot.Algorithm
 {
@@ -45,9 +46,12 @@ namespace DiscordBot.Algorithm
             // Najít čas
             (bool is_found, string new_message, TimeOnly hatch_time, TimeOnly end_time) step_time = FindTimeInText(step_emoji.new_message, client);
 
-            // Najít gym
-
             // Najít pokemona
+            (bool is_found, string new_message, Pokemon pokemon) step_pokemon = FindPokemonInText(step_time.new_message, client);
+
+            // Najít gym
+            (bool is_found, string new_message, Point point) step_point = FindPointInText(step_pokemon.new_message,client);
+
             StringBuilder sb = new();
             if (step_channel.is_found) sb.AppendLine("Kanál: " + step_channel.channel.Name);
             if (step_emoji.is_found) sb.AppendLine("Emoji: " + step_emoji.emoji);
@@ -58,6 +62,8 @@ namespace DiscordBot.Algorithm
                 int remain_minutes = (step_time.end_time.Hour-DateTime.Now.Hour)*60 + (step_time.end_time.Minute-DateTime.Now.Minute);
                 sb.AppendLine("Zbývá: " + remain_minutes + " minut.");
             }
+            if (step_pokemon.is_found) sb.AppendLine("Pokemon: " + step_pokemon.pokemon.Name);
+            if (step_point.is_found) sb.AppendLine("Point: " + step_point.point.Name);
 
             await step_channel.channel.SendMessageAsync(sb.ToString()).ConfigureAwait(false);
             await step_channel.channel.SendMessageAsync("Zbylo: " + step_time.new_message.ToString()).ConfigureAwait(false);
@@ -137,6 +143,38 @@ namespace DiscordBot.Algorithm
                 return (true, new_message, TimeOnly.MinValue, end_time);
             }
             return (true, message, TimeOnly.MinValue, TimeOnly.MinValue);
+        }
+
+        private (bool is_found, string new_message, Pokemon pokemon) FindPokemonInText(string message, BaseDiscordClient client)
+        {
+            using var context = new PogoContext();
+            string[] messages = message.ToLower().Trim().Split(" ");
+            foreach (var word in messages)
+            {
+                Pokemon pokemon = context.Pokemons.Where(p => p.Name.ToLower().Contains(word)).FirstOrDefault();
+                if (pokemon != null)
+                {
+
+                    return (true, message, pokemon);
+                }
+            }   
+            return (false, message, null);
+        }
+
+        private (bool is_found, string new_message, Point point) FindPointInText(string message, BaseDiscordClient client)
+        {
+            using var context = new PogoContext();
+            string[] messages = message.ToLower().Trim().Split(" ");
+            foreach (var word in messages)
+            {
+                Point point = context.Points.Where(p => p.Name.ToLower().Contains(word)).FirstOrDefault();
+                if (point != null)
+                {
+
+                    return (true, message, point);
+                }
+            }
+            return (false, message, null);
         }
 
         private DiscordChannel FindChannelById(BaseDiscordClient client, string id)

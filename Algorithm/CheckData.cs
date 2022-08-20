@@ -434,7 +434,6 @@ namespace DiscordBot.Algorithm
                 // Čekání na stisknutí na reakci
                 Task<MessageContext> messageResult2 = interactivity.WaitForMessageAsync(x => x.Channel.Id == 842805476973608961 && x.Author.Id == ctx.User.Id, TimeSpan.FromSeconds(30));
                 Task<ReactionContext> reactionResult2 = interactivity.WaitForReactionAsync(x => x == crossEmoji, ctx.User, TimeSpan.FromSeconds(30));
-                
                 List<Task> tasks = new() { messageResult2, reactionResult2 };
 
                 var result = await Task.WhenAny(tasks);

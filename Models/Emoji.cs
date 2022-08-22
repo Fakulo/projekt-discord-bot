@@ -74,6 +74,7 @@ namespace DiscordBot.Models
         public static string Pokestop { get { return ":pokestop:"; } }
         public static string Question { get { return ":grey_question:"; } }
         public static string RedCross { get { return ":x:"; } }
+        public static string ThumbsUp { get { return ":thumbsup:"; } }
         public static string Warning { get { return ":warning:"; } }
 
         public static string One { get { return ":one:"; } }

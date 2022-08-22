@@ -133,7 +133,8 @@ namespace DiscordBot.Models
             Minus2,
             Minus3,
             Minus4,
-            Leave
+            Leave,
+            Meet
         }
 
     }

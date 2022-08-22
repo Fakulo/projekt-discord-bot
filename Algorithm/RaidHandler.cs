@@ -26,7 +26,13 @@ namespace DiscordBot.Algorithm
 
         public async Task ProcessMessage(MessageCreateEventArgs e)
         {
-            await RaidReportAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, e.Author);
+            DiscordClient c = (DiscordClient)e.Client;
+            var report_channel = await c.GetChannelAsync(1004872574536269985);
+            if (e.Channel.Id == report_channel.Id)
+            {
+                await RaidReportAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, e.Author);
+            }
+            
         }
 
         public async Task ProcessReactionAdded(MessageReactionAddEventArgs e)
@@ -98,6 +104,7 @@ namespace DiscordBot.Algorithm
             var two_emoji = DiscordEmoji.FromName(client, Emoji.Two);
             var three_emoji = DiscordEmoji.FromName(client, Emoji.Three);
             var four_emoji = DiscordEmoji.FromName(client, Emoji.Four);
+            var thumbs_up_emoji = DiscordEmoji.FromName(client, Emoji.ThumbsUp);
 
             // Vytvoření reakcí
             await mes.CreateReactionAsync(green_check_emoji);
@@ -106,7 +113,8 @@ namespace DiscordBot.Algorithm
             await mes.CreateReactionAsync(two_emoji);
             await mes.CreateReactionAsync(three_emoji);
             await mes.CreateReactionAsync(four_emoji);
-            await mes.CreateReactionAsync(cross_emoji);            
+            await mes.CreateReactionAsync(cross_emoji);
+            await mes.CreateReactionAsync(thumbs_up_emoji);
         }
 
         private (FindStatus status, string new_message, DiscordChannel channel) FindChannelInText(string message, DiscordClient client)
@@ -277,7 +285,7 @@ namespace DiscordBot.Algorithm
         {
             var guild = message.Channel.Guild;
             var reactionName = emoji.GetDiscordName();
-            var embed = message.Embeds[0];           
+            var embed = message.Embeds[0];
             DiscordEmbedBuilder new_embed = emoji.Name switch
             {
                 "✅" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Join),
@@ -287,6 +295,7 @@ namespace DiscordBot.Algorithm
                 "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus2),
                 "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus3),
                 "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus4),
+                "👍" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Meet, channel),
                 _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave),
             };
             await message.ModifyAsync("", new_embed);

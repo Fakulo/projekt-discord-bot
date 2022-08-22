@@ -3,6 +3,7 @@ using DiscordBot.Models;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -198,7 +199,7 @@ namespace DiscordBot.Algorithm
             return embed;
         }
 
-        internal static DiscordEmbedBuilder SendBoxReportRaidInfo(BaseDiscordClient client, DiscordUser user, Point point, Pokemon pokemon, DiscordChannel channel, TimeOnly hatch_time, DiscordEmoji? emoji)
+        internal static DiscordEmbedBuilder SendBoxReportRaidInfo(BaseDiscordClient client, DiscordUser user, Point point, Pokemon pokemon, DiscordChannel channel, TimeOnly hatch_time, DiscordEmoji? emoji = null)
         {
             if (emoji is null)
             {
@@ -227,7 +228,7 @@ namespace DiscordBot.Algorithm
             return embed;
         }
 
-        internal static DiscordEmbedBuilder EditSendBoxReportRaid(DiscordMessage message, BaseDiscordClient client, DiscordUser user, DiscordEmbed embed, RaidJoinStatus join_status)
+        internal static DiscordEmbedBuilder EditSendBoxReportRaid(DiscordMessage message, BaseDiscordClient client, DiscordUser user, DiscordEmbed embed, RaidJoinStatus join_status, DiscordChannel? channel = null)
         {
             DiscordEmbedField field_channel = embed.Fields[0];
             DiscordEmbedField field_users_count = embed.Fields[1];
@@ -323,6 +324,9 @@ namespace DiscordBot.Algorithm
                 case RaidJoinStatus.Minus4:
                     field_users_count.Value = (int.Parse(field_users_count.Value) - 4).ToString();
                     break;
+                case RaidJoinStatus.Meet:
+                    SetMeetTime(message, (DiscordClient)client, user, embed, channel);
+                    break;
                 default:
                     break;
             }
@@ -352,6 +356,46 @@ namespace DiscordBot.Algorithm
 
             return new_embed;
         }
+
+        private static async void SetMeetTime(DiscordMessage message, DiscordClient client, DiscordUser user, DiscordEmbed embed, DiscordChannel? channel = null)
+        {
+            var mmeess = await channel.SendMessageAsync("Napiš čas srazu:").ConfigureAwait(false);
+            var interactivity = InteractivityExtension.GetInteractivityModule(client);
+            var meetResult = await interactivity.WaitForMessageAsync(x => x.Channel.Id == channel.Id && x.Author.Id == user.Id, TimeSpan.FromSeconds(30));
+
+            if (meetResult == null)
+            {
+                await mmeess.DeleteAsync();
+                await channel.SendMessageAsync("Sraz NENASTAVEN").ConfigureAwait(false);
+            }
+            
+            if (meetResult.Message.Content.Length > 0)
+            {
+                await mmeess.DeleteAsync();
+                await meetResult.Message.DeleteAsync();
+                var meet_channel = await client.GetChannelAsync(1004872638746857502);
+                var new_embed = new DiscordEmbedBuilder
+                {
+                    Title = embed.Title,
+                    Description = embed.Description,
+                    Color = DiscordColor.Azure,
+                    ThumbnailUrl = embed.Thumbnail.Url.ToString(),
+                    Author = new EmbedAuthor
+                    {
+                        Name = "SRAZ V " + meetResult.Message.Content,
+                        Url = embed.Author.Url.ToString()
+                    },
+                    Footer = new EmbedFooter
+                    {
+                        Text = "Sraz nahlásil " + user.Username
+                    },
+                    Timestamp = DateTime.Now,
+                    Url = embed.Url.ToString()
+                };
+                await meet_channel.SendMessageAsync("",false,new_embed).ConfigureAwait(false);
+            }
+        }
+
         internal static DiscordEmbedBuilder SendBoxReportRaid(BaseDiscordClient client, DiscordUser user, DiscordEmoji emoji, Point point, Pokemon pokemon, DiscordChannel channel, TimeOnly end_time, int remaining_time)
         {
             if (emoji == null)

@@ -72,7 +72,7 @@ namespace DiscordBot.Algorithm
                         
                         AddToGymCellsAsync(point);
 
-                        Methods.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
                          
                         count[0] += 1;
                         break;
@@ -107,14 +107,14 @@ namespace DiscordBot.Algorithm
                                                         
                             AddToGymCellsAsync(point);
 
-                            Methods.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
+                            SendBoxHandler.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
 
                             if (resultData.Result.Item2 == PointType.Pokestop){count[0] += 1;}
                             else{count[1] += 1;}
                         }
                         else
                         {
-                            Methods.SendBoxMessage(chnl_out, "Vytvoření nového bodu ZAMÍTNUTO.", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
+                            SendBoxHandler.SendBoxMessage(chnl_out, "Vytvoření nového bodu ZAMÍTNUTO.", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
                             count[2] += 1;
                         }
                         break;
@@ -134,7 +134,7 @@ namespace DiscordBot.Algorithm
 
                         result.Name = items[i].Name;
 
-                        Methods.SendBoxMessage(chnl_out, "Změna názvu bodu.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl_out, "Změna názvu bodu.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
 
                         count[3] += 1;
                         break;
@@ -159,7 +159,7 @@ namespace DiscordBot.Algorithm
                         result.Latitude = items[i].Latitude;
                         result.Longitude = items[i].Longitude;
 
-                        Methods.SendBoxMessage(chnl_out, "Změna souřadnic.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl_out, "Změna souřadnic.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
 
                         count[4] += 1;
                         break;
@@ -203,12 +203,12 @@ namespace DiscordBot.Algorithm
                             result.IdCell14 = newIdCell14;
                             result.IdCell17 = newIdCell17;
 
-                            Methods.SendBoxMessage(chnl_out, "Změna souřadnic bodu.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
+                            SendBoxHandler.SendBoxMessage(chnl_out, "Změna souřadnic bodu.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
                             count[4] += 1;
                         }
                         else
                         {
-                            Methods.SendBoxMessage(chnl_out, "Změna souřadnic ZAMÍTNUTA.", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
+                            SendBoxHandler.SendBoxMessage(chnl_out, "Změna souřadnic ZAMÍTNUTA.", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
                             count[5] += 1;
                         }                        
                         break;
@@ -225,7 +225,7 @@ namespace DiscordBot.Algorithm
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Warning));
                         sb.AppendLine(" " + items[i].Name);
 
-                        Methods.SendBoxMessage(chnl_out, "CHYBA - NUTNÁ KONTROLA V DATABÁZI. (Unreachable)", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl_out, "CHYBA - NUTNÁ KONTROLA V DATABÁZI. (Unreachable)", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
                         count[7] += 1;
                         break;
                     // pokud nenastane ani jedna předchozí možnost
@@ -234,7 +234,7 @@ namespace DiscordBot.Algorithm
                         sb.AppendLine(" " + items[i].Name);
                         result.NeedCheck = NeedCheck.Yes;
 
-                        Methods.SendBoxMessage(chnl_out, "CHYBA - NUTNÁ KONTROLA V DATABÁZI. (Default)", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl_out, "CHYBA - NUTNÁ KONTROLA V DATABÁZI. (Default)", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
                         count[8] += 1;
                         break;
                 }
@@ -264,7 +264,7 @@ namespace DiscordBot.Algorithm
             sbr.Append(Emoji.GetEmoji(ctx, Emoji.Warning));
             sbr.AppendLine(" Chyba v databázi (Default): " + count[8]);
 
-            Methods.SendBoxMessage(ctx, chnl_out, "Aktualizace dat proběhla úspěšně.", sbr.ToString(), DiscordColor.Green);
+            SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Aktualizace dat proběhla úspěšně.", sbr.ToString(), DiscordColor.Green);
         }
         /// <summary>
         /// Zpracuje změnu typu bodu u zadaného jména.
@@ -304,7 +304,7 @@ namespace DiscordBot.Algorithm
                     points[i].UpdatedAt = DateTime.Now;
                     
                     await context.SaveChangesAsync();
-                    Methods.SendBoxMessage(chnl_out, "Změna proběhla úspěšně.", sb.ToString(), DiscordColor.Green, points[i]);
+                    SendBoxHandler.SendBoxMessage(chnl_out, "Změna proběhla úspěšně.", sb.ToString(), DiscordColor.Green, points[i]);
                 }
                 
             }
@@ -349,7 +349,7 @@ namespace DiscordBot.Algorithm
                     points[i].UpdatedAt = DateTime.Now;
                     
                     await context.SaveChangesAsync();
-                    Methods.SendBoxMessage(chnl_out, "Změna proběhla úspěšně.", sb.ToString(), DiscordColor.Green, points[i]);
+                    SendBoxHandler.SendBoxMessage(chnl_out, "Změna proběhla úspěšně.", sb.ToString(), DiscordColor.Green, points[i]);
                 }
 
             }
@@ -375,7 +375,7 @@ namespace DiscordBot.Algorithm
                 StringBuilder sbu = new();
                 sbu.Append("Žádné body ke kontrole ");
                 sbu.Append(Emoji.GetEmoji(ctx,Emoji.GreenCheck));
-                Methods.SendBoxMessage(chnl_out, sbu.ToString(), "", DiscordColor.Green);
+                SendBoxHandler.SendBoxMessage(chnl_out, sbu.ToString(), "", DiscordColor.Green);
             }
 
             for (int i = 0; i < points.Count; i++)
@@ -397,7 +397,7 @@ namespace DiscordBot.Algorithm
                         points[i].NeedCheck = NeedCheck.Checked;
                         points[i].CheckedInfo = "Změna názvu.";
                         await context.SaveChangesAsync();
-                        Methods.SendBoxMessage(ctx, chnl_out, "Změna názvu proběhla úspěšně.", originalPoint.Name, points[i].Name, points[i]);
+                        SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Změna názvu proběhla úspěšně.", originalPoint.Name, points[i].Name, points[i]);
                         break;
                     case ManualChange.Type:
                         switch (resultData.Result.Item2)
@@ -407,40 +407,40 @@ namespace DiscordBot.Algorithm
                                 points[i].NeedCheck = NeedCheck.Checked;
                                 points[i].CheckedInfo = "Změna na Pokestop.";
                                 await context.SaveChangesAsync();
-                                Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
+                                SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "Gym":
                                 points[i].Type = PointType.Gym;
                                 points[i].NeedCheck = NeedCheck.Checked;
                                 points[i].CheckedInfo = "Změna na Gym.";
                                 await context.SaveChangesAsync();
-                                Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
+                                SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "ExGym":
                                 points[i].Type = PointType.ExGym;
                                 points[i].NeedCheck = NeedCheck.Checked;
                                 points[i].CheckedInfo = "Změna na ExGym.";
                                 await context.SaveChangesAsync();
-                                Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
+                                SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                             case "Portal":
                                 points[i].Type = PointType.Portal;
                                 points[i].NeedCheck = NeedCheck.Checked;
                                 points[i].CheckedInfo = "Změna na Portal.";
                                 await context.SaveChangesAsync();
-                                Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
+                                SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                                 break;
                         }
                         
                         break;
                     case ManualChange.Duplicate:
-                        Methods.SendBoxMessage(ctx, chnl_out, "Název je stejný jako předchozí.", points[i].Latitude, points[i].Longitude, points[i]);
+                        SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Název je stejný jako předchozí.", points[i].Latitude, points[i].Longitude, points[i]);
                         break;
                     case ManualChange.Skip:
-                        Methods.SendBoxMessage(ctx, chnl_out, "Změna zamítnuta.", points[i].Latitude, points[i].Longitude, points[i]);
+                        SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Změna zamítnuta.", points[i].Latitude, points[i].Longitude, points[i]);
                         break;
                     case ManualChange.Cancel:
-                        Methods.SendBoxMessage(chnl_out, "Kontrola ukončena.", "", DiscordColor.Orange);
+                        SendBoxHandler.SendBoxMessage(chnl_out, "Kontrola ukončena.", "", DiscordColor.Orange);
                         i = points.Count;
                         break;
                     case ManualChange.Coordinates:
@@ -448,7 +448,7 @@ namespace DiscordBot.Algorithm
                         points[i].Longitude = Double.Parse(resultData.Result.Item2.Split(" ")[1]);
                         points[i].NeedCheck = NeedCheck.Checked;
                         await context.SaveChangesAsync();
-                        Methods.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
+                        SendBoxHandler.SendBoxMessage(ctx, chnl_out, "Změna typu proběhla úspěšně.", points[i].Latitude, points[i].Longitude, points[i]);
                         break;
 
 

@@ -9,11 +9,16 @@ using System.Threading.Tasks;
 using DiscordBot.Models;
 using System.Text.RegularExpressions;
 using DiscordBot.Database;
+using static DiscordBot.Models.Enums;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Interactivity;
 
 namespace DiscordBot.Algorithm
 {
     public class RaidHandler
     {
+        private static readonly ulong id_report_raids = 1004872574536269985;
+
         public RaidHandler()
         {
 
@@ -21,11 +26,20 @@ namespace DiscordBot.Algorithm
 
         public async Task ProcessMessage(MessageCreateEventArgs e)
         {
-            await RaidReportAnalyzer(e.Message, e.Client, e.Channel);
-
+            await RaidReportAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, e.Author);
         }
 
-        private async Task RaidReportAnalyzer(DiscordMessage message, BaseDiscordClient client, DiscordChannel report_channel)
+        public async Task ProcessReactionAdded(MessageReactionAddEventArgs e)
+        {            
+            await ReactionAddedAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, (DiscordMember) e.User, e.Emoji);
+        }
+        public async Task ProcessReactionRemoved(MessageReactionRemoveEventArgs e)
+        {
+            await ReactionRemovedAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, (DiscordMember)e.User, e.Emoji);
+        }
+
+
+        private async Task RaidReportAnalyzer(DiscordMessage message, DiscordClient client, DiscordChannel report_channel, DiscordUser author)
         {
             //"23:05 <:pokestop:846823767565008926> Detske hriste <# 10048 72679 69166 9656>"
             DateTime time;
@@ -35,57 +49,81 @@ namespace DiscordBot.Algorithm
             Pokemon pokemon;
             DiscordEmoji emoji = DiscordEmoji.FromName((DiscordClient)client, Emoji.Warning);
 
-            await message.DeleteAsync();
-
             // Najít kanál
-            (bool is_found, string new_message, DiscordChannel channel) step_channel = FindChannelInText(message.Content, client);
+            var step_channel = FindChannelInText(message.Content.ToLower(), client);
 
             // Najít emoji
-            (bool is_found, string new_message, DiscordEmoji emoji) step_emoji = FindEmojiInText(step_channel.new_message, client);
+            var step_emoji = FindEmojiInText(step_channel.new_message, client);
 
             // Najít čas
-            (bool is_found, string new_message, TimeOnly hatch_time, TimeOnly end_time) step_time = FindTimeInText(step_emoji.new_message, client);
+            var step_time = FindTimeInText(step_emoji.new_message, client);
 
             // Najít pokemona
-            (bool is_found, string new_message, Pokemon pokemon) step_pokemon = FindPokemonInText(step_time.new_message, client);
+            var step_pokemon = FindPokemonInText(step_time.new_message, client);
 
             // Najít gym
-            (bool is_found, string new_message, Point point) step_point = FindPointInText(step_pokemon.new_message,client);
+            var step_point = FindPointInText(step_pokemon.new_message, client);
+
+            // Smazat zprávu
+            await message.DeleteAsync();
+
+            // Vypsat upravenou zprávu
+
+
 
             StringBuilder sb = new();
-            if (step_channel.is_found) sb.AppendLine("Kanál: " + step_channel.channel.Name);
-            if (step_emoji.is_found) sb.AppendLine("Emoji: " + step_emoji.emoji);
-            if (step_time.is_found && step_time.hatch_time != TimeOnly.MinValue) sb.AppendLine("Čas zahájení: " + step_time.hatch_time.ToShortTimeString());
-            if (step_time.is_found && step_time.end_time != TimeOnly.MinValue) sb.AppendLine("Čas konce: " + step_time.end_time.ToShortTimeString());
-            if (step_time.is_found && step_time.end_time != TimeOnly.MinValue)
-            {                
-                int remain_minutes = (step_time.end_time.Hour-DateTime.Now.Hour)*60 + (step_time.end_time.Minute-DateTime.Now.Minute);
-                sb.AppendLine("Zbývá: " + remain_minutes + " minut.");
-            }
-            if (step_pokemon.is_found) sb.AppendLine("Pokemon: " + step_pokemon.pokemon.Name);
-            if (step_point.is_found) sb.AppendLine("Point: " + step_point.point.Name);
+            if (step_channel.status == FindStatus.ChannelFound) sb.AppendLine("Kanál: " + step_channel.channel.Name);
+            if (step_emoji.status == FindStatus.EmojiFound) sb.AppendLine("Emoji: " + step_emoji.emoji);
+            if (step_time.status == FindStatus.HatchTimeFound && step_time.hatch_time != TimeOnly.MinValue) sb.AppendLine("Čas zahájení: " + step_time.hatch_time.ToShortTimeString());
+            if (step_time.status == FindStatus.EndTimeFound && step_time.end_time != TimeOnly.MinValue) sb.AppendLine("Čas konce: " + step_time.end_time.ToShortTimeString());
+            if (step_time.status == FindStatus.EndTimeFound && step_time.end_time != TimeOnly.MinValue) sb.AppendLine("Zbývá: " + GetRemaininTime(step_time.end_time) + " minut.");
+            if (step_pokemon.status == FindStatus.PokemonFound) sb.AppendLine("Pokemon: " + step_pokemon.pokemons.Keys.First().Name);
+            if (step_pokemon.status == FindStatus.MultiplePokemonFound) sb.AppendLine("Pokemon!!: " + step_pokemon.pokemons.Keys.First().Name);
+            if (step_point.status == FindStatus.PointFound) sb.AppendLine("Point: " + step_point.points.Keys.First().Name);
+            if (step_point.status == FindStatus.MultiplePointsFound) sb.AppendLine("Point!!: " + step_point.points.Keys.First().Name);
 
-            await step_channel.channel.SendMessageAsync(sb.ToString()).ConfigureAwait(false);
-            await step_channel.channel.SendMessageAsync("Zbylo: " + step_time.new_message.ToString()).ConfigureAwait(false);
+            var embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_emoji.emoji);
+            var embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_emoji.emoji);
 
 
+            var mes = await step_channel.channel.SendMessageAsync("", false, embed).ConfigureAwait(false);
+            var mesInfo = await client.GetChannelAsync(id_report_raids).Result.SendMessageAsync("", false, embed_info).ConfigureAwait(false);
+            //Console.WriteLine("Zbylo: " + step_point.new_message.ToString());
+
+            // Vytvoření emoji
+            var green_check_emoji = DiscordEmoji.FromName(client, Emoji.GreenCheck);
+            var invite_emoji = DiscordEmoji.FromName(client, Emoji.Invite);
+            var cross_emoji = DiscordEmoji.FromName(client, Emoji.RedCross);
+            var one_emoji = DiscordEmoji.FromName(client, Emoji.One);
+            var two_emoji = DiscordEmoji.FromName(client, Emoji.Two);
+            var three_emoji = DiscordEmoji.FromName(client, Emoji.Three);
+            var four_emoji = DiscordEmoji.FromName(client, Emoji.Four);
+
+            // Vytvoření reakcí
+            await mes.CreateReactionAsync(green_check_emoji);
+            await mes.CreateReactionAsync(invite_emoji);
+            await mes.CreateReactionAsync(one_emoji);
+            await mes.CreateReactionAsync(two_emoji);
+            await mes.CreateReactionAsync(three_emoji);
+            await mes.CreateReactionAsync(four_emoji);
+            await mes.CreateReactionAsync(cross_emoji);            
         }
 
-        private (bool is_found, string new_message, DiscordChannel channel) FindChannelInText(string message, BaseDiscordClient client)
+        private (FindStatus status, string new_message, DiscordChannel channel) FindChannelInText(string message, DiscordClient client)
         {
             Regex channel_patern = new(@"<#\d{19}>");
             Match channel_match = Regex.Match(message, channel_patern.ToString(), RegexOptions.IgnoreCase);
             if (channel_match.Success)
             {
                 DiscordChannel raid_channel = FindChannelById((DiscordClient)client, channel_match.Value);
-                string new_message = message.Replace(channel_match.ToString(), "").Replace("  ", " ");
+                string new_message = message.Replace(channel_match.ToString(), "").Replace("  ", " ").Trim();
 
-                return (true, new_message, raid_channel);
+                return (FindStatus.ChannelFound, new_message, raid_channel);
             }
-            return(false, message, null);
+            return(FindStatus.NotFound, message, null);
         }
 
-        private (bool is_found, string new_message, DiscordEmoji emoji) FindEmojiInText(string message, BaseDiscordClient client)
+        private (FindStatus status, string new_message, DiscordEmoji emoji) FindEmojiInText(string message, DiscordClient client)
         {
             Regex emoji_patern = new(@"<(:[a-z]+:)\d+>");
             Match emoji_match = Regex.Match(message, emoji_patern.ToString(), RegexOptions.IgnoreCase);
@@ -94,9 +132,9 @@ namespace DiscordBot.Algorithm
                 Regex emoji_name_patern = new(@":[a-z]+:");
                 Match emoji_name_match = Regex.Match(emoji_match.Value, emoji_name_patern.ToString(), RegexOptions.IgnoreCase);
                 DiscordEmoji emoji = DiscordEmoji.FromName((DiscordClient)client, emoji_name_match.Value);
-                string new_message = message.Replace(emoji_match.ToString(), "").Replace("  ", " ");
+                string new_message = message.Replace(emoji_match.ToString(), "").Replace("  ", " ").Trim();
 
-                return (true, new_message, emoji);                
+                return (FindStatus.EmojiFound, new_message, emoji);                
             }
 
             emoji_patern = new(@"(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])");
@@ -105,30 +143,40 @@ namespace DiscordBot.Algorithm
             {                
                 //Match emoji_name_match = Regex.Match(emoji_match.Value, emoji_match.ToString(), RegexOptions.IgnoreCase);
                 DiscordEmoji emoji = DiscordEmoji.FromUnicode((DiscordClient)client, emoji_match.Value);
-                string new_message = message.Replace(emoji_match.ToString(), "").Replace("  ", " ");
+                string new_message = message.Replace(emoji_match.ToString(), "").Replace("  ", " ").Trim();
 
-                return (true, new_message, emoji);
+                return (FindStatus.EmojiFound, new_message, emoji);
             }
-            return (false, message, null);
+            return (FindStatus.NotFound, message, null);
         }
-
-        private (bool is_found, string new_message, TimeOnly hatch_time, TimeOnly end_time) FindTimeInText(string message, BaseDiscordClient client)
+        
+        private (FindStatus status, string new_message, TimeOnly hatch_time, TimeOnly end_time) FindTimeInText(string message, DiscordClient client)
         {
             Regex time_patern = new(@"[\d]{1,2}:[\d]{2}");
             Match time_match = Regex.Match(message, time_patern.ToString(), RegexOptions.IgnoreCase);
             if (time_match.Success)
             {
                 TimeOnly hatch_time = TimeOnly.Parse(time_match.Value); 
-                string new_message = message.Replace(time_match.ToString(), "").Replace("  ", " ");
-
-                return (true, new_message, hatch_time,TimeOnly.MinValue);
+                string new_message = message.Replace(time_match.ToString(), "").Replace("  ", " ").Trim();
+                // TODO: Přidat možnost upravovat čas délky raidu
+                TimeOnly end_time_calculated = hatch_time.AddMinutes(45);
+                TimeOnly time_now = new(DateTime.Now.Hour, DateTime.Now.Minute);
+                if (hatch_time < time_now)
+                {
+                    return (FindStatus.EndTimeFound, new_message, hatch_time, end_time_calculated);
+                }
+                else
+                {
+                    return (FindStatus.HatchTimeFound, new_message, hatch_time, end_time_calculated);
+                }
+                
             }
             time_patern = new(@"[\d]{1,2}[\s]{0,1}min[\S]{0,5}");
             time_match = Regex.Match(message, time_patern.ToString(), RegexOptions.IgnoreCase);
             if (time_match.Success)
             {
-                Regex before_time_patern = new(@"[A-Za-z]{0,1}(eště|este|estě|ešte)");
-                string new_message = message.Replace(time_match.ToString(), "").Replace("  ", " ");
+                Regex before_time_patern = new(@"[A-Za-z]{0,1}(eště|este|estě|ešte)", RegexOptions.IgnoreCase);
+                string new_message = message.Replace(time_match.ToString(), "").Replace("  ", " ").Trim();
                 new_message = Regex.Replace(new_message, before_time_patern.ToString(), "", RegexOptions.IgnoreCase);
                 Regex time_number_patern = new(@"[\d]{1,2}");
                 Match time_number_match = Regex.Match(time_match.Value, time_number_patern.ToString(), RegexOptions.IgnoreCase);
@@ -140,41 +188,123 @@ namespace DiscordBot.Algorithm
                 end_time = end_time.AddHours(hours).AddMinutes(minutes);
 
 
-                return (true, new_message, TimeOnly.MinValue, end_time);
+                return (FindStatus.EndTimeFound, new_message, TimeOnly.MinValue, end_time);
             }
-            return (true, message, TimeOnly.MinValue, TimeOnly.MinValue);
+            return (FindStatus.NotFound, message, TimeOnly.MinValue, TimeOnly.MinValue);
         }
 
-        private (bool is_found, string new_message, Pokemon pokemon) FindPokemonInText(string message, BaseDiscordClient client)
+        private (FindStatus status, string new_message, Dictionary<Pokemon, int> pokemons) FindPokemonInText(string message, DiscordClient client)
+        {
+            // TODO: Odchytávat např. slovo MEGA (HAT/EVENT), aby se daly odlišit kategorie
+            using var context = new PogoContext();
+            string[] messages = message.ToLower().Trim().Split(" ");
+            Dictionary<Pokemon, int> pokemons = new();
+            foreach (var word in messages)
+            {
+                List<Pokemon> temp_pokemons = context.Pokemons.Where(p => p.Name.ToLower().Contains(word)).ToList();
+                foreach (var point in temp_pokemons)
+                {
+                    if (pokemons.ContainsKey(point))
+                    {
+                        pokemons[point] += 1;
+                    }
+                    else
+                    {
+                        pokemons.Add(point, 1);
+                    }
+                }
+            }
+            if (pokemons.Count != 0)
+            {
+                pokemons = pokemons.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+                string new_message = message.Replace(pokemons.Keys.First().Name.ToLower(), "").Replace("  ", " ").Trim();
+                if (pokemons.Count == 1)
+                { 
+                    return (FindStatus.PokemonFound, new_message, pokemons);
+                }
+                else
+                {
+                    return (FindStatus.MultiplePokemonFound, new_message, pokemons);
+                }
+            }
+            return (FindStatus.NotFound, message, pokemons);
+        }
+
+        private (FindStatus status, string new_message, Dictionary<Point, int> points) FindPointInText(string message, DiscordClient client)
         {
             using var context = new PogoContext();
             string[] messages = message.ToLower().Trim().Split(" ");
+            Dictionary<Point,int> points = new();
             foreach (var word in messages)
             {
-                Pokemon pokemon = context.Pokemons.Where(p => p.Name.ToLower().Contains(word)).FirstOrDefault();
-                if (pokemon != null)
+                List<Point> temp_points = context.Points.Where(p => p.Name.ToLower().Contains(word)).ToList();
+                foreach (var point in temp_points)
                 {
-
-                    return (true, message, pokemon);
+                    if (points.ContainsKey(point))
+                    {
+                        points[point] += 1;
+                    }
+                    else
+                    {
+                        points.Add(point, 1);
+                    }
+                }                
+            }
+            if (points.Count != 0)
+            {
+                points = points.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+                string new_message = message.Replace(points.Keys.First().Name.ToLower(), "").Replace("  ", " ").Trim();
+                if (points.Count == 1)
+                {
+                    return (FindStatus.PointFound, new_message, points);
                 }
-            }   
-            return (false, message, null);
+                else
+                {
+                    return (FindStatus.MultiplePointsFound, new_message, points);
+                }                
+            }
+            return (FindStatus.NotFound, message, points);
         }
 
-        private (bool is_found, string new_message, Point point) FindPointInText(string message, BaseDiscordClient client)
+        private int GetRemaininTime(TimeOnly end_time)
         {
-            using var context = new PogoContext();
-            string[] messages = message.ToLower().Trim().Split(" ");
-            foreach (var word in messages)
-            {
-                Point point = context.Points.Where(p => p.Name.ToLower().Contains(word)).FirstOrDefault();
-                if (point != null)
-                {
+            int remain_minutes = (end_time.Hour - DateTime.Now.Hour) * 60 + (end_time.Minute - DateTime.Now.Minute);
+            if(remain_minutes < 0) { remain_minutes = 0; }
+            return remain_minutes;
+        }
 
-                    return (true, message, point);
-                }
-            }
-            return (false, message, null);
+        private async Task ReactionAddedAnalyzer(DiscordMessage message, DiscordClient client, DiscordChannel channel, DiscordMember user, DiscordEmoji emoji)
+        {
+            var guild = message.Channel.Guild;
+            var reactionName = emoji.GetDiscordName();
+            var embed = message.Embeds[0];           
+            DiscordEmbedBuilder new_embed = emoji.Name switch
+            {
+                "✅" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Join),
+                "📩" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Invite),
+                "❌" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave),
+                "1⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus1),
+                "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus2),
+                "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus3),
+                "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus4),
+                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave),
+            };
+            await message.ModifyAsync("", new_embed);
+        }
+        private async Task ReactionRemovedAnalyzer(DiscordMessage message, DiscordClient client, DiscordChannel channel, DiscordMember user, DiscordEmoji emoji)
+        {
+            var guild = message.Channel.Guild;
+            var reactionName = emoji.GetDiscordName();
+            var embed = message.Embeds[0];
+            DiscordEmbedBuilder new_embed = emoji.Name switch
+            {
+                "1⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus1),
+                "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus2),
+                "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus3),
+                "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus4),
+                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave),
+            };
+            await message.ModifyAsync("", new_embed);
         }
 
         private DiscordChannel FindChannelById(BaseDiscordClient client, string id)

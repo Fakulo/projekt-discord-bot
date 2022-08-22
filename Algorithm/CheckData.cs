@@ -76,7 +76,7 @@ namespace DiscordBot.Algorithm
             if (reactionResult == null)
             {
                 await message.DeleteAsync();
-                Methods.SendBoxMessage(chnl, "Časový limit vypršel - BOD NEPŘIDÁN.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
+                SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - BOD NEPŘIDÁN.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
                 return (false, PointType.Portal);
             }
             // Uživatel zareaguje na pokestop - vrací se true a typ pokestop
@@ -143,7 +143,7 @@ namespace DiscordBot.Algorithm
             if (reactionResult == null)
             {
                 await message.DeleteAsync();
-                Methods.SendBoxMessage(chnl, "Časový limit vypršel - ZMĚNA ZAMÍTNUTA.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
+                SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - ZMĚNA ZAMÍTNUTA.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
                 return false;
             }
             // Uživatel zareaguje na potvrzení - vrací se true
@@ -211,7 +211,7 @@ namespace DiscordBot.Algorithm
             if (reactionResult == null)
             {
                 await message.DeleteAsync();
-                Methods.SendBoxMessage(chnl, "Časový limit vypršel - TYP NEZMĚNĚN.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
+                SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - TYP NEZMĚNĚN.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
                 return (false, PointType.Portal);
             }
             // Uživatel zareaguje na Pokestop - vrací se true + typ Pokestop
@@ -298,7 +298,7 @@ namespace DiscordBot.Algorithm
                     await messageContext.Message.DeleteAsync();
                     await message.DeleteAsync();
                     sb.AppendLine("Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.");
-                    Methods.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
+                    SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
                     return (false, "");
                 }
                 // Uživatel napíše stejný název - vrací se false + ""
@@ -307,7 +307,7 @@ namespace DiscordBot.Algorithm
                     await messageContext.Message.DeleteAsync();
                     await message.DeleteAsync();
                     sb.AppendLine("Nový název je stejný jako původní!");
-                    Methods.SendBoxMessage(chnl, "Změna neproběhla.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
+                    SendBoxHandler.SendBoxMessage(chnl, "Změna neproběhla.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
                     
                     return (false, "");
                 }
@@ -330,7 +330,7 @@ namespace DiscordBot.Algorithm
                 {
                     await message.DeleteAsync();
                     sb.AppendLine("Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.");
-                    Methods.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
+                    SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
                     return (false, "");
                 }
                 // Uživatel zareaguje na přeskočení - vrací se false + ""
@@ -400,7 +400,7 @@ namespace DiscordBot.Algorithm
             if (reactionResult == null)
             {
                 await message.DeleteAsync();
-                Methods.SendBoxMessage(chnl, "Časový limit vypršel - ZMĚNA NEPROVEDENA.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
+                SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - ZMĚNA NEPROVEDENA.", "Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.", DiscordColor.Red, p.Latitude, p.Longitude);
                 return (ManualChange.TimeOut,"");
             }
             // Uživatel zareaguje na Pokestop - vrací se true + typ Pokestop
@@ -448,7 +448,7 @@ namespace DiscordBot.Algorithm
                     {
                         await messageContext2.Message.DeleteAsync();
                         sb.AppendLine("Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.");
-                        Methods.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
                         return (ManualChange.TimeOut, "");
                     }
                     // Uživatel napíše stejný název - vrací se false + ""
@@ -456,7 +456,7 @@ namespace DiscordBot.Algorithm
                     {
                         await messageContext2.Message.DeleteAsync();
                         sb.AppendLine("Nový název je stejný jako původní!");
-                        Methods.SendBoxMessage(chnl, "Změna neproběhla.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl, "Změna neproběhla.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
 
                         return (ManualChange.Duplicate, "");
                     }
@@ -477,7 +477,7 @@ namespace DiscordBot.Algorithm
                     {
                         await reactionContext2.Message.DeleteAsync();
                         sb.AppendLine("Na rozhodnutí máte 30 vteřin, potom je návrh zamítnut.");
-                        Methods.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
+                        SendBoxHandler.SendBoxMessage(chnl, "Časový limit vypršel - NÁZEV NEZMĚNĚN.", sb.ToString(), DiscordColor.Red, p.Latitude, p.Longitude);
                         return (ManualChange.TimeOut, "");
                     }
                     // Uživatel zareaguje na přeskočení - vrací se false + ""

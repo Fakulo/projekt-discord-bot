@@ -51,9 +51,12 @@ namespace DiscordBot
                 Timeout = TimeSpan.FromSeconds(30)
             });
 
-            Client.MessageCreated += MessageCreatedHandler;            
+            Client.MessageCreated += MessageCreatedHandler;
 
-            
+            Client.MessageReactionAdded += MessageReactionAddedHandler;
+            Client.MessageReactionRemoved += MessageReactionRemovedHandler;
+            // Client.MessageReactionAdded += e => DiscordClient.GetUserAsync(e.User.Id);
+
 
             var commandsConfig = new CommandsNextConfiguration
             {
@@ -71,14 +74,35 @@ namespace DiscordBot
 
             await Task.Delay(-1);
 
-        }        
+        }
+
+        private async Task MessageReactionAddedHandler(MessageReactionAddEventArgs e)
+        {
+            //DiscordUser user = await new DiscordClient .GetUserAsync(e.User.Id).ConfigureAwait(false);
+            //if (!e.User.IsBot)
+            if (e.User.Id != e.Client.CurrentUser.Id)
+            {
+               // Console.WriteLine(e.User + " zmáčknul " + e.Emoji);
+
+                await RaidHandler.ProcessReactionAdded(e);
+            }
+            return;
+        }
+        private async Task MessageReactionRemovedHandler(MessageReactionRemoveEventArgs e)
+        {
+            if (e.User.Id != e.Client.CurrentUser.Id)
+            {
+                await RaidHandler.ProcessReactionRemoved(e);
+            }
+            return;
+        }
 
         private async Task<Task> MessageCreatedHandler(MessageCreateEventArgs e)
         {
             if (e.Author.Id != e.Client.CurrentUser.Id)
             {
                 //e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
-                Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
+                //Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
 
                 await RaidHandler.ProcessMessage(e);
                                

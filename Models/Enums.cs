@@ -106,7 +106,36 @@ namespace DiscordBot.Models
             Transgression,
             Violation
         }
-          
+        
+        public enum FindStatus
+        {
+            ChannelFound,
+            MultipleChannelsFound,
+            EmojiFound,
+            MultipleEmojisFound,
+            HatchTimeFound,
+            EndTimeFound,
+            PokemonFound,
+            MultiplePokemonFound,
+            PointFound,
+            MultiplePointsFound,
+            NotFound
+        }
+        public enum RaidJoinStatus
+        {
+            Join,
+            Invite,
+            Plus1,
+            Plus2,
+            Plus3,
+            Plus4,
+            Minus1,
+            Minus2,
+            Minus3,
+            Minus4,
+            Leave,
+            Meet
+        }
 
     }
 }

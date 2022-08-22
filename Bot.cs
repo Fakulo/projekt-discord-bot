@@ -19,6 +19,7 @@ namespace DiscordBot
     {
         public DiscordClient Client { get; private set; }
         public CommandsNextModule Commands { get; private set; }
+        public RaidHandler RaidHandler { get; private set; }
 
         public async Task RunAsync()
         {
@@ -43,14 +44,19 @@ namespace DiscordBot
 
             Client.Ready += OnClientReady;
 
+            RaidHandler = new();
+
             Client.UseInteractivity(new InteractivityConfiguration
             { 
                 Timeout = TimeSpan.FromSeconds(30)
             });
 
-            Client.MessageCreated += OnTypingReady;            
+            Client.MessageCreated += MessageCreatedHandler;
 
-            
+            Client.MessageReactionAdded += MessageReactionAddedHandler;
+            Client.MessageReactionRemoved += MessageReactionRemovedHandler;
+            // Client.MessageReactionAdded += e => DiscordClient.GetUserAsync(e.User.Id);
+
 
             var commandsConfig = new CommandsNextConfiguration
             {
@@ -68,19 +74,40 @@ namespace DiscordBot
 
             await Task.Delay(-1);
 
-        }        
+        }
 
-        private async Task<Task> OnTypingReady(MessageCreateEventArgs e)
+        private async Task MessageReactionAddedHandler(MessageReactionAddEventArgs e)
+        {
+            //DiscordUser user = await new DiscordClient .GetUserAsync(e.User.Id).ConfigureAwait(false);
+            //if (!e.User.IsBot)
+            if (e.User.Id != e.Client.CurrentUser.Id)
+            {
+               // Console.WriteLine(e.User + " zmáčknul " + e.Emoji);
+
+                await RaidHandler.ProcessReactionAdded(e);
+            }
+            return;
+        }
+        private async Task MessageReactionRemovedHandler(MessageReactionRemoveEventArgs e)
+        {
+            if (e.User.Id != e.Client.CurrentUser.Id)
+            {
+                await RaidHandler.ProcessReactionRemoved(e);
+            }
+            return;
+        }
+
+        private async Task<Task> MessageCreatedHandler(MessageCreateEventArgs e)
         {
             if (e.Author.Id != e.Client.CurrentUser.Id)
-            {                  
-               Console.WriteLine("Privátní kanál: " + e.Channel.IsPrivate);
-               Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
-                
-               // await e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
-            }
-            Pokemon p = new Pokemon();            
-            return Task.CompletedTask;
+            {
+                //e.Channel.SendMessageAsync("Napsal si: " + e.Message.Content).ConfigureAwait(false);
+                //Console.WriteLine(e.Message.Author.Username + ": " + e.Message.Content);
+
+                await RaidHandler.ProcessMessage(e);
+                               
+            }      
+            return Task.FromResult(Task.CompletedTask);
         }        
 
         private Task OnClientReady(ReadyEventArgs e)

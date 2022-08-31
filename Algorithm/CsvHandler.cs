@@ -10,7 +10,7 @@ using DiscordBot.Models;
 
 namespace DiscordBot.Algorithm
 {
-    class CsvFile
+    class CsvHandler
     {
         /// <summary>
         /// Z ručně nastaveného souboru .csv vytáhne list bodů

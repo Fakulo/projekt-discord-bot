@@ -76,8 +76,8 @@ namespace DiscordBot.Commands
         [Command("addData")]
         public async Task AddData(CommandContext ctx)
         {
-            List<Item> list = CsvFile.ReadFile();
-            Algorithm.DatabaseComm db = new Algorithm.DatabaseComm(ctx);
+            List<Item> list = CsvHandler.ReadFile();
+            Algorithm.DatabaseHandler db = new Algorithm.DatabaseHandler(ctx);
 
             db.ProcessInputPoints(list);            
             
@@ -88,7 +88,7 @@ namespace DiscordBot.Commands
         [Command("changeType")]
         public async Task ChangeType(CommandContext ctx, string name)
         {
-            DatabaseComm db = new DatabaseComm(ctx);
+            DatabaseHandler db = new DatabaseHandler(ctx);
 
             await Task.Run(() => db.ChangePointType(name));
         }
@@ -96,7 +96,7 @@ namespace DiscordBot.Commands
         [Command("changeName")]
         public async Task ChangeName(CommandContext ctx, string name)
         {
-            DatabaseComm db = new DatabaseComm(ctx);
+            DatabaseHandler db = new DatabaseHandler(ctx);
 
             await Task.Run(() => db.ChangePointName(name));
         }
@@ -104,7 +104,7 @@ namespace DiscordBot.Commands
         [Command("check")]
         public async Task Check(CommandContext ctx)
         {
-            DatabaseComm db = new DatabaseComm(ctx);
+            DatabaseHandler db = new DatabaseHandler(ctx);
 
             await Task.Run(() => db.CheckPoints());
         }
@@ -112,7 +112,7 @@ namespace DiscordBot.Commands
         [Command("list")]
         public async Task List(CommandContext ctx, string input)
         {
-            DatabaseComm db = new DatabaseComm(ctx);
+            DatabaseHandler db = new DatabaseHandler(ctx);
 
             //await Task.Run(() => db.CheckPoints());
             List<Point> points = db.GetPoints(input);
@@ -129,7 +129,7 @@ namespace DiscordBot.Commands
         [Command("pokemons")]
         public async Task Pokemons(CommandContext ctx)
         {
-            DatabaseComm db = new(ctx);
+            DatabaseHandler db = new(ctx);
             //List<PokemonStat> pokemons = db.GetPokemons();
             using var context = new PogoContext();
             var gymCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == "5118682267492810752");

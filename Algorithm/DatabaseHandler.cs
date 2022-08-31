@@ -15,7 +15,7 @@ using static DiscordBot.Models.Enums;
 
 namespace DiscordBot.Algorithm
 {
-    class DatabaseComm
+    class DatabaseHandler
     {
         //chanel ID, kde se bude výpis z aktualizace DB (bot-output).
         private static readonly ulong id_out = 842805476973608961;
@@ -25,7 +25,7 @@ namespace DiscordBot.Algorithm
         Task<DiscordChannel> chnl_comm;
         private readonly CommandContext ctx;
 
-        public DatabaseComm(CommandContext ctx)
+        public DatabaseHandler(CommandContext ctx)
         {
             this.ctx = ctx;
             chnl_out = ctx.Client.GetChannelAsync(id_out);

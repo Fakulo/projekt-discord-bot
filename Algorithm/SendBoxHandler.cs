@@ -166,12 +166,15 @@ namespace DiscordBot.Algorithm
             return SendBoxReportRaid(client, user, emoji, point, pokemon, channel, hatch_time);
         }*/
 
-        internal static DiscordEmbedBuilder SendBoxReportRaid(BaseDiscordClient client, DiscordUser user, Point point, Pokemon pokemon, DiscordChannel channel, TimeOnly hatch_time, DiscordEmoji? emoji)
+        internal static DiscordEmbedBuilder SendBoxReportRaid(BaseDiscordClient client, DiscordUser user, Point point, Pokemon pokemon, DiscordChannel channel, TimeOnly time, FindStatus status_time, DiscordEmoji? emoji)
         {   
             if(emoji is null)
             {
                 emoji = Emoji.GetEmoji((DiscordClient)client, Emoji.Question);
             }
+            string text_time = string.Empty;
+            if (status_time == FindStatus.HatchTimeFound) text_time = "Čas líhnutí: " + time.ToShortTimeString();            
+            if (status_time == FindStatus.EndTimeFound) text_time = "Zbývá: " + GetRemaininTime(time).ToString() + " minut. Konec " + time.ToShortTimeString();
 
             var embed = new DiscordEmbedBuilder
             {
@@ -181,7 +184,7 @@ namespace DiscordBot.Algorithm
                 ThumbnailUrl = new(pokemon.ImageUrl),
                 Author = new EmbedAuthor
                 {
-                    Name = "Čas líhnutí: " + hatch_time.ToShortTimeString(),
+                    Name = text_time,
                     Url = pokemon.ImageUrl
                 },
                 Footer = new EmbedFooter
@@ -199,12 +202,16 @@ namespace DiscordBot.Algorithm
             return embed;
         }
 
-        internal static DiscordEmbedBuilder SendBoxReportRaidInfo(BaseDiscordClient client, DiscordUser user, Point point, Pokemon pokemon, DiscordChannel channel, TimeOnly hatch_time, DiscordEmoji? emoji = null)
+        internal static DiscordEmbedBuilder SendBoxReportRaidInfo(BaseDiscordClient client, DiscordUser user, Point point, Pokemon pokemon, DiscordChannel channel, TimeOnly time, FindStatus status_time, DiscordEmoji? emoji = null)
         {
             if (emoji is null)
             {
                 emoji = Emoji.GetEmoji((DiscordClient)client, Emoji.Question);
             }
+
+            string text_time = string.Empty;
+            if (status_time == FindStatus.HatchTimeFound) text_time = "Čas líhnutí: " + time.ToShortTimeString();
+            if (status_time == FindStatus.EndTimeFound) text_time = "Zbývá: " + GetRemaininTime(time).ToString() + " minut. Konec " + time.ToShortTimeString();
 
             var embed = new DiscordEmbedBuilder
             {
@@ -214,7 +221,7 @@ namespace DiscordBot.Algorithm
                 ThumbnailUrl = new(pokemon.ImageUrl),
                 Author = new EmbedAuthor
                 {
-                    Name = "Čas líhnutí: " + hatch_time.ToShortTimeString(),
+                    Name = text_time,
                     Url = pokemon.ImageUrl
                 },
                 Footer = new EmbedFooter
@@ -229,7 +236,7 @@ namespace DiscordBot.Algorithm
         }
 
         internal static DiscordEmbedBuilder EditSendBoxReportRaid(DiscordMessage message, BaseDiscordClient client, DiscordUser user, DiscordEmbed embed, RaidJoinStatus join_status, DiscordChannel? channel = null)
-        {
+        {            
             DiscordEmbedField field_channel = embed.Fields[0];
             DiscordEmbedField field_users_count = embed.Fields[1];
             DiscordEmbedField field_users_raid = embed.Fields[2];
@@ -292,6 +299,8 @@ namespace DiscordBot.Algorithm
                     result_invite = field_users_invite.Value.Replace(user.Mention, "").Replace("\n\n", "\n");
                     field_users_count.Value = (int.Parse(field_users_count.Value) - 1).ToString();
                 }
+                message.DeleteReactionAsync(DiscordEmoji.FromName((DiscordClient)client, Emoji.GreenCheck), user);
+                message.DeleteReactionAsync(DiscordEmoji.FromName((DiscordClient)client, Emoji.Invite), user);
                 message.DeleteReactionAsync(DiscordEmoji.FromName((DiscordClient)client, Emoji.One), user);
                 message.DeleteReactionAsync(DiscordEmoji.FromName((DiscordClient)client, Emoji.Two), user);
                 message.DeleteReactionAsync(DiscordEmoji.FromName((DiscordClient)client, Emoji.Three), user);
@@ -372,7 +381,7 @@ namespace DiscordBot.Algorithm
             if (meetResult.Message.Content.Length > 0)
             {
                 await mmeess.DeleteAsync();
-                await meetResult.Message.DeleteAsync();
+                //await meetResult.Message.DeleteAsync();
                 var meet_channel = await client.GetChannelAsync(1004872638746857502);
                 var new_embed = new DiscordEmbedBuilder
                 {
@@ -432,6 +441,12 @@ namespace DiscordBot.Algorithm
                 UpdatedAt = dateTime
             };
             return point;
-        }     
+        }
+        private static int GetRemaininTime(TimeOnly end_time)
+        {
+            int remain_minutes = (end_time.Hour - DateTime.Now.Hour) * 60 + (end_time.Minute - DateTime.Now.Minute);
+            if (remain_minutes < 0) { remain_minutes = 0; }
+            return remain_minutes;
+        }
     }
 }

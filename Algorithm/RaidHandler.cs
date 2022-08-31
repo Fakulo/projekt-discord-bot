@@ -36,12 +36,19 @@ namespace DiscordBot.Algorithm
         }
 
         public async Task ProcessReactionAdded(MessageReactionAddEventArgs e)
-        {            
-            await ReactionAddedAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, (DiscordMember) e.User, e.Emoji);
+        {
+            if (e.Channel.Id == 1004872679691669656)
+            {
+                await ReactionAddedAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, (DiscordMember)e.User, e.Emoji);
+            }
+            
         }
         public async Task ProcessReactionRemoved(MessageReactionRemoveEventArgs e)
         {
-            await ReactionRemovedAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, (DiscordMember)e.User, e.Emoji);
+            if (e.Channel.Id == 1004872679691669656)
+            {
+                await ReactionRemovedAnalyzer(e.Message, (DiscordClient)e.Client, e.Channel, (DiscordMember)e.User, e.Emoji);
+            }
         }
 
 
@@ -88,8 +95,22 @@ namespace DiscordBot.Algorithm
             if (step_point.status == FindStatus.PointFound) sb.AppendLine("Point: " + step_point.points.Keys.First().Name);
             if (step_point.status == FindStatus.MultiplePointsFound) sb.AppendLine("Point!!: " + step_point.points.Keys.First().Name);
 
-            var embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_emoji.emoji);
-            var embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_emoji.emoji);
+            DiscordEmbed embed = new DiscordEmbedBuilder();
+            DiscordEmbed embed_info = new DiscordEmbedBuilder();
+            if (step_time.status == FindStatus.HatchTimeFound)
+            {
+                embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_time.status , step_emoji.emoji);
+                embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_time.status, step_emoji.emoji);
+            }
+            if (step_time.status == FindStatus.EndTimeFound)
+            {
+                embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.end_time, step_time.status, step_emoji.emoji);
+                embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.end_time, step_time.status, step_emoji.emoji);
+            }
+
+
+           
+            
 
 
             var mes = await step_channel.channel.SendMessageAsync("", false, embed).ConfigureAwait(false);
@@ -241,7 +262,12 @@ namespace DiscordBot.Algorithm
         private (FindStatus status, string new_message, Dictionary<Point, int> points) FindPointInText(string message, DiscordClient client)
         {
             using var context = new PogoContext();
-            string[] messages = message.ToLower().Trim().Split(" ");
+            Regex pattern = new(@"^.(.*)$");
+            string edited_message = message.ToLower().Replace(" - ", " ").Trim();
+            if (edited_message.StartsWith("-")) { edited_message = edited_message.Remove(0,1);}
+
+            if (edited_message.EndsWith("-")) { edited_message = edited_message.Remove(edited_message.Length - 1); }
+            string[] messages = edited_message.ToLower().Replace(" - ", " ").Trim().Split(" ");
             Dictionary<Point,int> points = new();
             foreach (var word in messages)
             {
@@ -284,19 +310,19 @@ namespace DiscordBot.Algorithm
         private async Task ReactionAddedAnalyzer(DiscordMessage message, DiscordClient client, DiscordChannel channel, DiscordMember user, DiscordEmoji emoji)
         {
             var guild = message.Channel.Guild;
-            var reactionName = emoji.GetDiscordName();
+            message = await channel.GetMessageAsync(message.Id);
             var embed = message.Embeds[0];
             DiscordEmbedBuilder new_embed = emoji.Name switch
             {
-                "✅" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Join),
-                "📩" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Invite),
-                "❌" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave),
-                "1⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus1),
-                "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus2),
-                "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus3),
-                "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus4),
+                "✅" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Join, channel),
+                "📩" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Invite, channel),
+                "❌" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave, channel),
+                "1⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus1, channel),
+                "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus2, channel),
+                "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus3, channel),
+                "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus4, channel),
                 "👍" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Meet, channel),
-                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave),
+                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave, channel),
             };
             await message.ModifyAsync("", new_embed);
         }
@@ -304,14 +330,15 @@ namespace DiscordBot.Algorithm
         {
             var guild = message.Channel.Guild;
             var reactionName = emoji.GetDiscordName();
+            message = await channel.GetMessageAsync(message.Id);
             var embed = message.Embeds[0];
             DiscordEmbedBuilder new_embed = emoji.Name switch
             {
-                "1⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus1),
-                "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus2),
-                "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus3),
-                "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus4),
-                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave),
+                "1⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus1, channel),
+                "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus2, channel),
+                "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus3, channel),
+                "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus4, channel),
+                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave, channel),
             };
             await message.ModifyAsync("", new_embed);
         }

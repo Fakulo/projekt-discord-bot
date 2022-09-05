@@ -68,12 +68,14 @@ namespace DiscordBot.Algorithm
                         };
 
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Pokestop));
-                        sb.AppendLine(" " + items[i].Name);                        
-                        
+                        sb.AppendLine(" " + items[i].Name);
+
+                        //context.Points.Add(point);
+                        //await context.SaveChangesAsync();
                         AddToGymCellsAsync(point);
 
-                        SendBoxHandler.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
-                         
+                        //SendBoxHandler.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
+                        Console.WriteLine("Bod: " + items[i].Name + " vytvořen.");
                         count[0] += 1;
                         break;
                     // vytvoření bodu pro kontrolu
@@ -104,7 +106,10 @@ namespace DiscordBot.Algorithm
                                 NeedCheck = NeedCheck.No,
                                 CheckedInfo = "N/A"
                             };
-                                                        
+
+                            //context.Points.Add(point);
+                            //await context.SaveChangesAsync();
+
                             AddToGymCellsAsync(point);
 
                             SendBoxHandler.SendBoxMessage(chnl_out, "Vytvoření nového bodu.", sb.ToString(), DiscordColor.Green, items[i].Latitude, items[i].Longitude);
@@ -198,10 +203,22 @@ namespace DiscordBot.Algorithm
 
                         if (successful.Result)
                         {
+                            if (result.IdCell17 != newIdCell17)
+                            {
+                                GymLocationCell oldCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == result.IdCell17);
+                                GymLocationCell newCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == newIdCell17);
+                                oldCell.Points.Remove(result);
+                                newCell.Points.Add(result);
+                                await context.SaveChangesAsync();
+                                ChangeCells(context, result);
+                            }
+
                             result.Latitude = items[i].Latitude;
                             result.Longitude = items[i].Longitude;
                             result.IdCell14 = newIdCell14;
                             result.IdCell17 = newIdCell17;
+
+                            
 
                             SendBoxHandler.SendBoxMessage(chnl_out, "Změna souřadnic bodu.", sb.ToString(), DiscordColor.Yellow, items[i].Latitude, items[i].Longitude);
                             count[4] += 1;
@@ -220,13 +237,13 @@ namespace DiscordBot.Algorithm
                     case State.Unreachable:
                         Console.WriteLine(items[i].Name);
                         Console.WriteLine("Unreachable!");
-                        result.NeedCheck = NeedCheck.Yes;
+                        //result.NeedCheck = NeedCheck.Yes;
 
                         sb.Append(Emoji.GetEmoji(ctx, Emoji.Warning));
                         sb.AppendLine(" " + items[i].Name);
 
-                        SendBoxHandler.SendBoxMessage(chnl_out, "CHYBA - NUTNÁ KONTROLA V DATABÁZI. (Unreachable)", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
-                        count[7] += 1;
+                        //SendBoxHandler.SendBoxMessage(chnl_out, "CHYBA - NUTNÁ KONTROLA V DATABÁZI. (Unreachable)", sb.ToString(), DiscordColor.Red, items[i].Latitude, items[i].Longitude);
+                        //count[7] += 1;
                         break;
                     // pokud nenastane ani jedna předchozí možnost
                     default:
@@ -278,7 +295,13 @@ namespace DiscordBot.Algorithm
             string title;
             Task<(bool, Enums.PointType)> resultData;
             // TODO: Omezit výpis pokud bude počet nalezených stopů větší než 20 (30?), tak vybídnout k podrobějšímu vyhledávání.
-            List<Point> points = context.Points.Where(i => i.Name.ToLower().Contains(name.ToLower())).ToList();
+            List<Point> points = context.Points.Where(i => i.Name.ToLower().Contains(name.ToLower())).ToList();            
+
+            if (points.Count == 0)
+            {
+                string reason = "Klíčové slovo " + name + " nebylo nalezeno v databázi.";
+                SendBoxHandler.SendBoxMessage(chnl_out, "Bod nenalezen.", reason, DiscordColor.Yellow);
+            }
 
             for (int i = 0; i < points.Count; i++)
             //foreach (Point p in points)
@@ -289,7 +312,8 @@ namespace DiscordBot.Algorithm
 
                 title = (i+1) + "/" + points.Count + " " + Emoji.GetEmoji(ctx, points[i].Type) + " " + points[i].Type + " " + points[i].Name;
 
-                resultData = CheckData.ChangeType(ctx, chnl_out, points[i], title, sb.ToString(), DiscordColor.Orange);
+                resultData = CheckData.ChangeType(ctx, chnl_out, points[i], title, sb.ToString(), DiscordColor.Orange);                
+
                 if (resultData.Result.Item1)
                 {
                     sb = new StringBuilder();
@@ -304,7 +328,12 @@ namespace DiscordBot.Algorithm
                     points[i].UpdatedAt = DateTime.Now;
                     
                     await context.SaveChangesAsync();
+
+                    ChangeCells(context, points[i]);
                     SendBoxHandler.SendBoxMessage(chnl_out, "Změna proběhla úspěšně.", sb.ToString(), DiscordColor.Green, points[i]);
+                }else if (!resultData.Result.Item1 && resultData.Result.Item2 == PointType.Pokestop)
+                {
+                    break;
                 }
                 
             }
@@ -324,6 +353,12 @@ namespace DiscordBot.Algorithm
             // TODO: Oddělit metodu na hledání bodů v databázi
             // TODO: Omezit výpis pokud bude počet nalezených stopů větší než 20 (30?), tak vybídnout k podrobějšímu vyhledávání.
             List<Point> points = context.Points.Where(i => i.Name.ToLower().Contains(name.ToLower())).ToList();
+
+            if (points.Count == 0)
+            {
+                string reason = "Klíčové slovo " + name + " nebylo nalezeno v databázi.";
+                SendBoxHandler.SendBoxMessage(chnl_out, "Bod nenalezen.", reason, DiscordColor.Yellow);
+            }
 
             for (int i = 0; i < points.Count; i++)
             //foreach (Point p in points)
@@ -454,9 +489,35 @@ namespace DiscordBot.Algorithm
 
                 }
                 //TODO: await context.SaveChangesAsync();
-
             }
 
+            List<GymLocationCell> cells = context.GymLocationCells.Where(i => i.NeedCheck == NeedCheck.Yes).ToList();
+
+            if (cells.Count == 0)
+            {
+                StringBuilder sbu = new();
+                sbu.Append("Žádné buňky ke kontrole ");
+                sbu.Append(Emoji.GetEmoji(ctx, Emoji.GreenCheck));
+                SendBoxHandler.SendBoxMessage(chnl_out, sbu.ToString(), "", DiscordColor.Green);
+            }
+
+            for (int i = 0; i < cells.Count; i++)
+            {
+                List<Point> pointsInCell = cells[i].Points;
+                StringBuilder sbcell = new();
+                sbcell.Append(Emoji.GetEmoji(ctx, Emoji.Location) + " ");
+                sbcell.AppendLine("Buňka: " + cells[i].Name);
+                sbcell.Append(Emoji.GetEmoji(ctx, Emoji.Edit) + " ");
+                sbcell.AppendLine("Popis chyby: " + cells[i].CheckedInfo);
+                sbcell.AppendLine("Výpis bodů:");
+                foreach (var item in pointsInCell)
+                {
+                    //sbcell.Append(Emoji.GetEmoji(ctx, item.Type) + " ");
+                    sbcell.AppendLine(item.Type + " " + item.Name);
+                }
+                SendBoxHandler.SendBoxMessage(chnl_out,"Nutná kontrola gymů a pokéstopů!", sbcell.ToString(), DiscordColor.Red);
+            }
+            
 
         }
 
@@ -501,10 +562,14 @@ namespace DiscordBot.Algorithm
 
                 gymCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
             }
-            
-            gymCell.Points.Add(point);            
 
-            switch (point.Type)
+            gymCell.Points.Add(point);
+
+            await context.SaveChangesAsync();
+
+            ChangeCells(context, point);
+
+            /*switch (point.Type)
             {
                 case PointType.Pokestop:
                     gymCell.PokestopCount += 1;
@@ -516,7 +581,136 @@ namespace DiscordBot.Algorithm
                 case PointType.Portal:
                     gymCell.PortalCount += 1;
                     break;
-            }            
+            }*/
+            
+        }
+
+        private async void CheckCells(PogoContext context)
+        {
+            Task<List<GymLocationCell>> cells = context.GymLocationCells.ToListAsync();
+            
+            
+        }
+        public async void ChangeAllCells(PogoContext context)
+        {
+            List<GymLocationCell> gymCells = context.GymLocationCells.ToList();
+            foreach (var item in gymCells)
+            {
+                Console.WriteLine(item.Name);
+                ChangeCells(context, item.Points[0]);
+            }
+        }
+
+        private async void ChangeCells(PogoContext context, Point point)
+        {
+            GymLocationCell gymCell = context.GymLocationCells.FirstOrDefault(i => i.IdCell14 == point.IdCell14);
+
+            gymCell.GymCount = gymCell.Points.Count(x => x.Type == PointType.Gym || x.Type == PointType.ExGym);
+            gymCell.PokestopCount = gymCell.Points.Count(x => x.Type == PointType.Pokestop);
+            gymCell.PortalCount = gymCell.Points.Count(x => x.Type == PointType.Portal);
+            int totalCount = gymCell.GymCount + gymCell.PokestopCount;
+
+            if (totalCount >= 2 && totalCount <= 5)
+            {                
+                if (gymCell.GymCount == 0)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 1 gym.";
+                }
+                else if (gymCell.GymCount == 1)
+                {
+                    gymCell.NeedCheck = NeedCheck.No;
+                    gymCell.CheckedInfo = "V pořádku.";
+                }
+                else if (gymCell.GymCount > 1)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "MAX 1 gym!";
+                }
+
+            }
+            if (totalCount >= 6 && totalCount <= 19)
+            {
+                if (gymCell.GymCount == 0)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 2 gymy.";
+                }
+                else if(gymCell.GymCount == 1)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 1 gym.";
+                }
+                else if (gymCell.GymCount == 2)
+                {
+                    gymCell.NeedCheck = NeedCheck.No;
+                    gymCell.CheckedInfo = "V pořádku.";
+                }
+                else if (gymCell.GymCount > 2)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "MAX 2 gymy!";
+                }
+            }
+            if (totalCount >= 20 && totalCount <= 34)
+            {
+                if (gymCell.GymCount == 0)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 3 gymy.";
+                }
+                else if (gymCell.GymCount == 1)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 2 gymy.";
+                }
+                else if (gymCell.GymCount == 2)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 1 gym.";
+                }
+                else if (gymCell.GymCount == 3)
+                {
+                    gymCell.NeedCheck = NeedCheck.No;
+                    gymCell.CheckedInfo = "V pořádku.";
+                }
+                else if (gymCell.GymCount > 3)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "MAX 3 gymy!";
+                }
+            }
+            if (totalCount >= 35 )
+            {
+                if (gymCell.GymCount == 0)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 3 gymy.";
+                }
+                else if (gymCell.GymCount == 1)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 2 gymy.";
+                }
+                else if (gymCell.GymCount == 2)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "Nutné přidat 1 gym.";
+                }
+                else if (gymCell.GymCount == 3)
+                {
+                    gymCell.NeedCheck = NeedCheck.No;
+                    gymCell.CheckedInfo = "V pořádku.";
+                }
+                else if (gymCell.GymCount > 3)
+                {
+                    gymCell.NeedCheck = NeedCheck.Yes;
+                    gymCell.CheckedInfo = "MAX 3 gymy!";
+                }
+            }
+
+            await context.SaveChangesAsync();
+
         }
 
         /// <summary>

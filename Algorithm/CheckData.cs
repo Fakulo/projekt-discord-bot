@@ -190,6 +190,7 @@ namespace DiscordBot.Algorithm
             var exGymEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.ExGym);
             var portalEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.Ingress);
             var skipEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.ArrowRight);
+            var cancelEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.RedCross);
 
             // Vytvoření reakcí
             if (p.Type != PointType.Pokestop) { await message.CreateReactionAsync(pokestopEmoji); }
@@ -198,11 +199,12 @@ namespace DiscordBot.Algorithm
             if (p.Type != PointType.Portal) { await message.CreateReactionAsync(portalEmoji); }            
 
             await message.CreateReactionAsync(skipEmoji);
+            await message.CreateReactionAsync(cancelEmoji);
 
             // Čekání na stisknutí na reakci
             var interactivity = ctx.Client.GetInteractivityModule();
             var reactionResult = await interactivity.WaitForReactionAsync(
-                x => x == pokestopEmoji || x == gymEmoji || x == exGymEmoji || x == portalEmoji || x == skipEmoji,
+                x => x == pokestopEmoji || x == gymEmoji || x == exGymEmoji || x == portalEmoji || x == skipEmoji || x == cancelEmoji,
                 ctx.User,
                 TimeSpan.FromSeconds(30)
             ).ConfigureAwait(false);
@@ -243,6 +245,12 @@ namespace DiscordBot.Algorithm
             {
                 await message.DeleteAsync();
                 return (false, PointType.Portal);
+            }
+            // Uživatel zareaguje na ukončení - vrací se false + typ PokeSTOP
+            else if (reactionResult.Emoji == cancelEmoji)
+            {
+                await message.DeleteAsync();
+                return (false, PointType.Pokestop);
             }
             return (false, PointType.Portal);
         }

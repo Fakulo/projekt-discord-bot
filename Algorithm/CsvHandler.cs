@@ -21,7 +21,7 @@ namespace DiscordBot.Algorithm
             List<Item> items = new List<Item>();
             Item item;
 
-            using (TextFieldParser csvParser = new TextFieldParser(@"D:\Tomáš\Documents\Visual Studio 2019\Projekty\DiscordBot\gyms+stops_2021_02_02_15_28_02.csv"))
+            using (TextFieldParser csvParser = new TextFieldParser(@"D:\Tomáš\Documents\Visual Studio 2019\Projekty\DiscordBot\Gyms+stops_data.csv"))
             {
                 csvParser.CommentTokens = new string[] { "#" };
                 csvParser.SetDelimiters(new string[] { "," });

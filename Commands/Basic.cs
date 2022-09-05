@@ -60,26 +60,31 @@ namespace DiscordBot.Commands
 
         [Command("add")]
         public async Task Add(CommandContext ctx, string name, double lat, double lng)
-        {            
-            Item item = new(lat, lng, name);
-            List<Item> points = new List<Item>
+        {
+            if (ctx.Channel.Id == 843455748401790996)
+            {
+                Item item = new(lat, lng, name);
+                List<Item> points = new List<Item>
             {
                 item
             };
 
-            await ctx.Channel.SendMessageAsync("LVL 30: " + item.GetCell().Id.ToString()).ConfigureAwait(false);
-            await ctx.Channel.SendMessageAsync("LVL 17: " + item.GetParent(17)).ConfigureAwait(false);
-            
-            //await AddToDatabase.AddToDB(points);
+                await ctx.Channel.SendMessageAsync("LVL 30: " + item.GetCell().Id.ToString()).ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync("LVL 17: " + item.GetParent(17)).ConfigureAwait(false);
 
+                //await AddToDatabase.AddToDB(points);
+            }
         }
         [Command("addData")]
         public async Task AddData(CommandContext ctx)
         {
-            List<Item> list = CsvHandler.ReadFile();
-            Algorithm.DatabaseHandler db = new Algorithm.DatabaseHandler(ctx);
+            if (ctx.Channel.Id == 843455748401790996)
+            {
+                List<Item> list = CsvHandler.ReadFile();
+                Algorithm.DatabaseHandler db = new Algorithm.DatabaseHandler(ctx);
 
-            db.ProcessInputPoints(list);            
+                await Task.Run(() => db.ProcessInputPoints(list));
+            }
             
         }
 
@@ -88,25 +93,47 @@ namespace DiscordBot.Commands
         [Command("changeType")]
         public async Task ChangeType(CommandContext ctx, string name)
         {
-            DatabaseHandler db = new DatabaseHandler(ctx);
+            if(ctx.Channel.Id == 843455748401790996 || ctx.Channel.Id == 842805476973608961)
+            {
+                DatabaseHandler db = new DatabaseHandler(ctx);
 
-            await Task.Run(() => db.ChangePointType(name));
+                await Task.Run(() => db.ChangePointType(name));
+            }
+            
         }
 
         [Command("changeName")]
         public async Task ChangeName(CommandContext ctx, string name)
         {
-            DatabaseHandler db = new DatabaseHandler(ctx);
+            if (ctx.Channel.Id == 843455748401790996)
+            {
+                DatabaseHandler db = new DatabaseHandler(ctx);
 
-            await Task.Run(() => db.ChangePointName(name));
+                await Task.Run(() => db.ChangePointName(name));
+            }
         }
 
         [Command("check")]
         public async Task Check(CommandContext ctx)
         {
-            DatabaseHandler db = new DatabaseHandler(ctx);
+            if (ctx.Channel.Id == 843455748401790996)
+            {
+                DatabaseHandler db = new DatabaseHandler(ctx);
 
-            await Task.Run(() => db.CheckPoints());
+                await Task.Run(() => db.CheckPoints());
+            }
+        }
+
+        [Command("checkCells")]
+        public async Task CheckCells(CommandContext ctx)
+        {
+            if (ctx.Channel.Id == 843455748401790996 || ctx.Channel.Id == 842805476973608961)
+            {
+                DatabaseHandler db = new DatabaseHandler(ctx);
+                PogoContext context = new PogoContext();
+
+                await Task.Run(() => db.ChangeAllCells(context));
+            }
         }
 
         [Command("list")]
@@ -116,14 +143,23 @@ namespace DiscordBot.Commands
 
             //await Task.Run(() => db.CheckPoints());
             List<Point> points = db.GetPoints(input);
-            var interactivity = ctx.Client.GetInteractivityModule();      
+            if(points.Count > 0)
+            {
+                var interactivity = ctx.Client.GetInteractivityModule();
+
+                var pages = this.GeneratePagesInEmbeds(ctx, points);
+                //DiscordMessage m = await ctx.Client.SendMessageAsync(ctx.Channel, l[0]).ConfigureAwait(false);
+                //PaginatedMessage pm = new PaginatedMessage();
+                var pokestopEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.Pokestop);
+                var ct = new CancellationTokenSource(30);
+                await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages, TimeSpan.FromMinutes(5), TimeoutBehaviour.Delete);
+            }
+            else
+            {
+                string reason = "Klíčové slovo " + input + " nebylo nalezeno v databázi.";
+                SendBoxHandler.SendBoxMessage(ctx.Channel, "Bod nenalezen.", reason, DiscordColor.Yellow);
+            }
             
-            var pages = this.GeneratePagesInEmbeds(ctx, points);
-            //DiscordMessage m = await ctx.Client.SendMessageAsync(ctx.Channel, l[0]).ConfigureAwait(false);
-            //PaginatedMessage pm = new PaginatedMessage();
-            var pokestopEmoji = DiscordEmoji.FromName(ctx.Client, Emoji.Pokestop);
-            var ct = new CancellationTokenSource(30);
-            await interactivity.SendPaginatedMessage(ctx.Channel, ctx.User, pages,TimeSpan.FromMinutes(5),TimeoutBehaviour.Delete);
         }
 
         [Command("pokemons")]

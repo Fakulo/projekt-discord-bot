@@ -7,6 +7,7 @@ using DSharpPlus.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static DiscordBot.Models.Enums;
 using static DSharpPlus.Entities.DiscordEmbedBuilder;
@@ -36,6 +37,24 @@ namespace DiscordBot.Algorithm
                 Timestamp = DateTime.Now
             };
             await chnl.Result.SendMessageAsync("", false, embed).ConfigureAwait(false);
+        }
+        /// <summary>
+        /// MessageBox bez reakcí, který zobrazí zprávu.
+        /// </summary>
+        /// <param name="chnl">Kanál, kde se MessageBox zobrazí</param>
+        /// <param name="title">Nadpis MessageBoxu</param>
+        /// <param name="description">Text v MessageBoxu</param>
+        /// <param name="color">Barva MessageBoxu</param>
+        internal static async void SendBoxMessage(DiscordChannel channel, string title, string description, DiscordColor color)
+        {
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = title,
+                Description = description,
+                Color = color,
+                Timestamp = DateTime.Now
+            };
+            await channel.SendMessageAsync("", false, embed).ConfigureAwait(false);
         }
         /// <summary>
         /// MessageBox s reakcí potvrdit nebo zamítnout, který zobrazí zprávu.
@@ -371,37 +390,45 @@ namespace DiscordBot.Algorithm
             var mmeess = await channel.SendMessageAsync("Napiš čas srazu:").ConfigureAwait(false);
             var interactivity = InteractivityExtension.GetInteractivityModule(client);
             var meetResult = await interactivity.WaitForMessageAsync(x => x.Channel.Id == channel.Id && x.Author.Id == user.Id, TimeSpan.FromSeconds(30));
+            Regex time_patern = new(@"[\d]{1,2}:[\d]{2}");
 
             if (meetResult == null)
             {
                 await mmeess.DeleteAsync();
                 await channel.SendMessageAsync("Sraz NENASTAVEN").ConfigureAwait(false);
-            }
-            
-            if (meetResult.Message.Content.Length > 0)
+            }            
+            else if (meetResult.Message.Content.Length > 0)
             {
-                await mmeess.DeleteAsync();
-                //await meetResult.Message.DeleteAsync();
-                var meet_channel = await client.GetChannelAsync(1004872638746857502);
-                var new_embed = new DiscordEmbedBuilder
+                Match time_match = Regex.Match(meetResult.Message.Content, time_patern.ToString(), RegexOptions.IgnoreCase);
+                if (time_match.Success)
                 {
-                    Title = embed.Title,
-                    Description = embed.Description,
-                    Color = DiscordColor.Azure,
-                    ThumbnailUrl = embed.Thumbnail.Url.ToString(),
-                    Author = new EmbedAuthor
+                    await mmeess.DeleteAsync();
+                    //await meetResult.Message.DeleteAsync();
+                    var meet_channel = await client.GetChannelAsync(1004872638746857502);
+                    var new_embed = new DiscordEmbedBuilder
                     {
-                        Name = "SRAZ V " + meetResult.Message.Content,
-                        Url = embed.Author.Url.ToString()
-                    },
-                    Footer = new EmbedFooter
-                    {
-                        Text = "Sraz nahlásil " + user.Username
-                    },
-                    Timestamp = DateTime.Now,
-                    Url = embed.Url.ToString()
-                };
-                await meet_channel.SendMessageAsync("",false,new_embed).ConfigureAwait(false);
+                        Title = embed.Title,
+                        Description = embed.Description,
+                        Color = DiscordColor.Azure,
+                        ThumbnailUrl = embed.Thumbnail.Url.ToString(),
+                        Author = new EmbedAuthor
+                        {
+                            Name = "SRAZ V " + meetResult.Message.Content,
+                            Url = embed.Author.Url.ToString()
+                        },
+                        Footer = new EmbedFooter
+                        {
+                            Text = "Sraz nahlásil " + user.Username
+                        },
+                        Timestamp = DateTime.Now,
+                        Url = embed.Url.ToString()
+                    };
+                    await meet_channel.SendMessageAsync("", false, new_embed).ConfigureAwait(false);
+                }
+                else
+                {
+                    await channel.SendMessageAsync("Čas musí mít formát hh:mm.").ConfigureAwait(false);
+                }
             }
         }
 

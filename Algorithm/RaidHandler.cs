@@ -95,47 +95,84 @@ namespace DiscordBot.Algorithm
             if (step_point.status == FindStatus.PointFound) sb.AppendLine("Point: " + step_point.points.Keys.First().Name);
             if (step_point.status == FindStatus.MultiplePointsFound) sb.AppendLine("Point!!: " + step_point.points.Keys.First().Name);
 
-            DiscordEmbed embed = new DiscordEmbedBuilder();
-            DiscordEmbed embed_info = new DiscordEmbedBuilder();
-            if (step_time.status == FindStatus.HatchTimeFound)
-            {
-                embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_time.status , step_emoji.emoji);
-                embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_time.status, step_emoji.emoji);
+            if(step_channel.status == FindStatus.NotFound || step_time.status == FindStatus.NotFound || step_pokemon.status == FindStatus.NotFound || step_point.status == FindStatus.NotFound)
+            {                               
+                DiscordMember member = (DiscordMember)author;
+                await member.SendMessageAsync("Prosím, použij správný formát resp. napiš všechny informace.").ConfigureAwait(false);
+                await member.SendMessageAsync("Formát: čas pokémon gym #kanál").ConfigureAwait(false);
             }
-            if (step_time.status == FindStatus.EndTimeFound)
+            else if (step_pokemon.status == FindStatus.MultiplePokemonFound)
             {
-                embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.end_time, step_time.status, step_emoji.emoji);
-                embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.end_time, step_time.status, step_emoji.emoji);
+                DiscordMember member = (DiscordMember)author;
+                StringBuilder sb_pok = new();
+                sb_pok.AppendLine("Podle tvého popisu jsem našel více pokémonů:");
+                foreach (var item in step_pokemon.pokemons)
+                {
+                    if (item.Value > 0)
+                    {
+                        sb_pok.AppendLine(item.Key.Name);
+                    }
+                }
+                sb_pok.AppendLine("Zkus prosím použít přesnější popis.");
+                await member.SendMessageAsync(sb_pok.ToString()).ConfigureAwait(false);                
             }
+            else if (step_point.status == FindStatus.MultiplePointsFound)
+            {
+                DiscordMember member = (DiscordMember)author;
+                StringBuilder sb_poi = new();
+                sb_poi.AppendLine("Podle tvého popisu jsem našel více bodů:");
+                int maxValue = step_point.points.Values.Max();
+                foreach (var item in step_point.points)
+                {                    
+                    if (item.Value == maxValue)
+                    {                       
+                        sb_poi.AppendLine(item.Key.Type.ToString() + ": " + item.Key.Name);
+                    }
+                }
+                sb_poi.AppendLine("Zkus prosím použít přesnější popis.");
+                await member.SendMessageAsync(sb_poi.ToString()).ConfigureAwait(false);
+            }
+            else { 
+
+                DiscordEmbed embed = new DiscordEmbedBuilder();
+                DiscordEmbed embed_info = new DiscordEmbedBuilder();
+                if (step_time.status == FindStatus.HatchTimeFound)
+                {
+                    embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_time.status , step_emoji.emoji);
+                    embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.hatch_time, step_time.status, step_emoji.emoji);
+                }
+                if (step_time.status == FindStatus.EndTimeFound)
+                {
+                    embed = SendBoxHandler.SendBoxReportRaid(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.end_time, step_time.status, step_emoji.emoji);
+                    embed_info = SendBoxHandler.SendBoxReportRaidInfo(client, author, step_point.points.Keys.First(), step_pokemon.pokemons.Keys.First(), step_channel.channel, step_time.end_time, step_time.status, step_emoji.emoji);
+                }          
 
 
-           
-            
 
+                var mes = await step_channel.channel.SendMessageAsync("", false, embed).ConfigureAwait(false);
+                var mesInfo = await client.GetChannelAsync(id_report_raids).Result.SendMessageAsync("", false, embed_info).ConfigureAwait(false);
+                //Console.WriteLine("Zbylo: " + step_point.new_message.ToString());
 
-            var mes = await step_channel.channel.SendMessageAsync("", false, embed).ConfigureAwait(false);
-            var mesInfo = await client.GetChannelAsync(id_report_raids).Result.SendMessageAsync("", false, embed_info).ConfigureAwait(false);
-            //Console.WriteLine("Zbylo: " + step_point.new_message.ToString());
+                // Vytvoření emoji
+                var green_check_emoji = DiscordEmoji.FromName(client, Emoji.GreenCheck);
+                var invite_emoji = DiscordEmoji.FromName(client, Emoji.Invite);
+                var cross_emoji = DiscordEmoji.FromName(client, Emoji.RedCross);
+                var one_emoji = DiscordEmoji.FromName(client, Emoji.One);
+                var two_emoji = DiscordEmoji.FromName(client, Emoji.Two);
+                var three_emoji = DiscordEmoji.FromName(client, Emoji.Three);
+                var four_emoji = DiscordEmoji.FromName(client, Emoji.Four);
+                var thumbs_up_emoji = DiscordEmoji.FromName(client, Emoji.ThumbsUp);
 
-            // Vytvoření emoji
-            var green_check_emoji = DiscordEmoji.FromName(client, Emoji.GreenCheck);
-            var invite_emoji = DiscordEmoji.FromName(client, Emoji.Invite);
-            var cross_emoji = DiscordEmoji.FromName(client, Emoji.RedCross);
-            var one_emoji = DiscordEmoji.FromName(client, Emoji.One);
-            var two_emoji = DiscordEmoji.FromName(client, Emoji.Two);
-            var three_emoji = DiscordEmoji.FromName(client, Emoji.Three);
-            var four_emoji = DiscordEmoji.FromName(client, Emoji.Four);
-            var thumbs_up_emoji = DiscordEmoji.FromName(client, Emoji.ThumbsUp);
-
-            // Vytvoření reakcí
-            await mes.CreateReactionAsync(green_check_emoji);
-            await mes.CreateReactionAsync(invite_emoji);
-            await mes.CreateReactionAsync(one_emoji);
-            await mes.CreateReactionAsync(two_emoji);
-            await mes.CreateReactionAsync(three_emoji);
-            await mes.CreateReactionAsync(four_emoji);
-            await mes.CreateReactionAsync(cross_emoji);
-            await mes.CreateReactionAsync(thumbs_up_emoji);
+                // Vytvoření reakcí
+                await mes.CreateReactionAsync(green_check_emoji);
+                await mes.CreateReactionAsync(invite_emoji);
+                await mes.CreateReactionAsync(one_emoji);
+                await mes.CreateReactionAsync(two_emoji);
+                await mes.CreateReactionAsync(three_emoji);
+                await mes.CreateReactionAsync(four_emoji);
+                await mes.CreateReactionAsync(cross_emoji);
+                await mes.CreateReactionAsync(thumbs_up_emoji);
+            }
         }
 
         private (FindStatus status, string new_message, DiscordChannel channel) FindChannelInText(string message, DiscordClient client)
@@ -226,20 +263,22 @@ namespace DiscordBot.Algorithm
         {
             // TODO: Odchytávat např. slovo MEGA (HAT/EVENT), aby se daly odlišit kategorie
             using var context = new PogoContext();
-            string[] messages = message.ToLower().Trim().Split(" ");
+            string[] messages = message.ToLower().Trim().Replace("(", "").Replace(")", " ").Trim().Split(" ");
             Dictionary<Pokemon, int> pokemons = new();
             foreach (var word in messages)
             {
-                List<Pokemon> temp_pokemons = context.Pokemons.Where(p => p.Name.ToLower().Contains(word)).ToList();
-                foreach (var point in temp_pokemons)
-                {
-                    if (pokemons.ContainsKey(point))
+                if(word.Length > 2) { 
+                    List<Pokemon> temp_pokemons = context.Pokemons.Where(p => p.Name.ToLower().Contains(word)).ToList();
+                    foreach (var point in temp_pokemons)
                     {
-                        pokemons[point] += 1;
-                    }
-                    else
-                    {
-                        pokemons.Add(point, 1);
+                        if (pokemons.ContainsKey(point))
+                        {
+                            pokemons[point] += 1;
+                        }
+                        else
+                        {
+                            pokemons.Add(point, 1);
+                        }
                     }
                 }
             }
@@ -247,6 +286,15 @@ namespace DiscordBot.Algorithm
             {
                 pokemons = pokemons.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
                 string new_message = message.Replace(pokemons.Keys.First().Name.ToLower(), "").Replace("  ", " ").Trim();
+                int maxKey = pokemons.Values.Max();
+                foreach (var item in pokemons)
+                {
+                    if(item.Value < maxKey)
+                    {
+                        pokemons.Remove(item.Key);
+                    }
+                }
+
                 if (pokemons.Count == 1)
                 { 
                     return (FindStatus.PokemonFound, new_message, pokemons);
@@ -271,23 +319,35 @@ namespace DiscordBot.Algorithm
             Dictionary<Point,int> points = new();
             foreach (var word in messages)
             {
-                List<Point> temp_points = context.Points.Where(p => p.Name.ToLower().Contains(word)).ToList();
-                foreach (var point in temp_points)
+                if(word.Length > 2)
                 {
-                    if (points.ContainsKey(point))
+                    List<Point> temp_points = context.Points.Where(p => p.Name.ToLower().Contains(word)).ToList();
+                    foreach (var point in temp_points)
                     {
-                        points[point] += 1;
+                        if (points.ContainsKey(point))
+                        {
+                            points[point] += 1;
+                        }
+                        else
+                        {
+                            points.Add(point, 1);
+                        }
                     }
-                    else
-                    {
-                        points.Add(point, 1);
-                    }
-                }                
+                }
+                               
             }
             if (points.Count != 0)
             {
                 points = points.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
                 string new_message = message.Replace(points.Keys.First().Name.ToLower(), "").Replace("  ", " ").Trim();
+                int maxKey = points.Values.Max();
+                foreach (var item in points)
+                {
+                    if (item.Value < maxKey)
+                    {
+                        points.Remove(item.Key);
+                    }
+                }
                 if (points.Count == 1)
                 {
                     return (FindStatus.PointFound, new_message, points);
@@ -322,7 +382,7 @@ namespace DiscordBot.Algorithm
                 "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus3, channel),
                 "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Plus4, channel),
                 "👍" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Meet, channel),
-                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave, channel),
+                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Nothing, channel),
             };
             await message.ModifyAsync("", new_embed);
         }
@@ -338,7 +398,7 @@ namespace DiscordBot.Algorithm
                 "2⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus2, channel),
                 "3⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus3, channel),
                 "4⃣" => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Minus4, channel),
-                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Leave, channel),
+                _ => SendBoxHandler.EditSendBoxReportRaid(message, client, user, embed, RaidJoinStatus.Nothing, channel),
             };
             await message.ModifyAsync("", new_embed);
         }
